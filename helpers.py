@@ -11,3 +11,14 @@ class color:
     STOP_ITALIC = '\x1B[0m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
+
+
+def find_pattern(pattern, value):
+    import re
+    x = re.search(pattern, value)
+    if x:
+        return x
+    else:
+        return None
+
+

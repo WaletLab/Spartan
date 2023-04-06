@@ -15,6 +15,7 @@ parser.add_argument("--host", type=str, help="ip address")
 parser.add_argument("--port", type=str, help="port to scan if all print -a if range print example: 1-20")
 parser.add_argument("--mode", type=str, help="scan mode")
 parser.add_argument("--only_known_service", help="return only port with known services", action='store_true')
+parser.add_argument("--output", help="dump scan result to text file")
 args = parser.parse_args()
 
 sc = Scanner()
@@ -52,6 +53,9 @@ if result:
     else:
         table_data = [[x['type'], x['port'], x['status'], x['service'], x['info']] for x in result]
     print(tabulate(table_data, headers=header))
+    if args.output:
+        with open(args.output, "a") as outfile:
+            outfile.writelines(tabulate(table_data, headers=header))
 else:
     print(color.RED + "Result for {}: no open ports founds".format(hostname) + color.END)
 print("\nProgram end in: " + color.BOLD + "{}".format(time.process_time()) + color.END)
