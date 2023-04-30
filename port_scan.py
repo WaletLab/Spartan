@@ -3,6 +3,8 @@ import time
 from contextlib import contextmanager
 import asyncio
 
+import helpers
+
 
 def get_service(port, typ):
     try:
@@ -12,11 +14,6 @@ def get_service(port, typ):
             return result
     except OSError:
         pass
-
-
-def split_port_lists(lst, chunk_size):
-    result = [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-    return result
 
 
 def check_html_response(data):
@@ -37,7 +34,7 @@ def check_html_response(data):
 
 
 class Scanner:
-    def __init__(self, host, ports, timeout=1):
+    def __init__(self, host, ports, timeout=0.5):
         self.ports = ports
         self.target = host
         self.timeout = timeout
@@ -45,11 +42,17 @@ class Scanner:
         self._observers = list()
         self.scan_list = []
         self._loop = asyncio.new_event_loop()
+        self.temp = []
+        self.response = None
 
     @property
     def _scan_tasks(self):
         """setup a corutine for pair target-port"""
-        return [self._scan_target_port(target, port) for port in self.ports for target in [self.target]]
+        tmp = []
+        for port in self.ports:
+            for p in port:
+                tmp.append(self._scan_target_port(self.target, p))
+            return tmp
 
     @contextmanager
     def _timer(self):
@@ -66,16 +69,14 @@ class Scanner:
     async def _scan_target_port(self, addr, port):
         temp_dict = {'type': "TCP", 'port': port, 'status': None, 'service': None, 'info': None}
         try:
-            await asyncio.wait_for(
+            red, writer = await asyncio.wait_for(
                 asyncio.open_connection(addr, port), timeout=self.timeout)
-
+            info = await helpers.Port().check_port(addr=addr, port=port, red=red, writer=writer)
+            if info:
+                temp_dict['info'] = info
             temp_dict['status'] = "OPEN"
             self.scan_list.append(temp_dict)
         except (ConnectionRefusedError, OSError, asyncio.TimeoutError):
-            # # reason = {
-            # #     "ConnectionRe"
-            # # }
-            # temp_dict['port_state'] = "CLOSED"
             pass
         try:
             temp_dict['service'] = socket.getservbyport(port)
