@@ -77,7 +77,6 @@ if result.scan_list:
     else:
         header = [color.BOLD+'TYPE', 'PORT', 'STATUS', 'SERVICE'+color.END]
     if args.only_known_service:
-        # TODO zbieranie odpowiedzi moze niech bedzie oddzielnym trybem?
         if os_detection:
             table_data = [[x['type'], x['port'], x['status'], x['service'], x['info']] for x in result.scan_list if x['service'] is not None]
         else:

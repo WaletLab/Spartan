@@ -44,13 +44,6 @@ class Port:
         return result
 
     async def check_port(self, red,writer,addr,port):
-        # to fajnie byloby dodac przed stable version
-        # TODO dodac obsluge ldap
-        # TODO sprawdzanie portow 80 i 443
-
-        # to dodac przed v0.0.5
-        # TODO sprawdzanie cms
-        # TODO sprawdzanie routera +
         response = None
         if port == 80:
             query = f"GET / HTTP/1.1\r\nHost: {addr}\r\n\r\n"
@@ -76,5 +69,4 @@ class Port:
         # pass
 
     def script_execute(self, code):
-        # TODO v0.0.8
         pass
