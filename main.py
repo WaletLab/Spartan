@@ -1,6 +1,4 @@
 from art import tprint
-from tqdm import tqdm
-
 from helpers import color, Port
 import sys
 import time
@@ -65,9 +63,6 @@ if port:
     timer = time.perf_counter()
     result = Scanner(hostname, port, timeout)
     result.execute()
-    # for p in tqdm(range(len(port)), dynamic_ncols=True):
-    #     result = Scanner(hostname, port[p]).execute()
-        # tqdm().update()
     stop = time.perf_counter()
 if result.scan_list:
     print(color.GREEN + "Result for {}:".format(hostname) + color.END)
