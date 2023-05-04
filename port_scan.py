@@ -6,7 +6,7 @@ import helpers
 
 
 class Scanner:
-    def __init__(self, host, ports, timeout=0.5):
+    def __init__(self, host, ports, timeout=1, mode=False):
         self.ports = ports
         self.target = host
         self.timeout = timeout
@@ -16,6 +16,7 @@ class Scanner:
         self._loop = asyncio.new_event_loop()
         self.temp = []
         self.response = None
+        self.mode = mode
 
     @property
     def _scan_tasks(self):
@@ -39,10 +40,12 @@ class Scanner:
 
     async def _scan_target_port(self, addr, port):
         temp_dict = {'type': "TCP", 'port': port, 'status': None, 'service': None, 'info': None}
+        info = False
         try:
             red, writer = await asyncio.wait_for(
                 asyncio.open_connection(addr, port), timeout=self.timeout)
-            info = await helpers.Port().check_port(addr=addr, port=port, red=red, writer=writer)
+            if self.mode is not False:
+                info = await helpers.Port().check_port(addr=addr, port=port, red=red, writer=writer)
             if info:
                 temp_dict['info'] = info
             temp_dict['status'] = "OPEN"
