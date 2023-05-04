@@ -48,11 +48,16 @@ Additionally, thanks to custom scripts, you can fully automate your work and tur
 
 ## Contributing
 
-Contributions are always welcome!
+As a contributor, you are welcome to make suggestions, report issues, or submit pull requests to improve the project. However, please keep in mind that the project is currently in development and does not have a stable version yet.
 
-Please let me know if you want support me in development!
+If you are interested in contributing, please reach out to us via email dannyx1543@gmail.com. We appreciate any help and support in making this project better. Thank you!
 
 
+## Disclaimer
+
+This tool is intended for legal and ethical use only. We do not condone or take any responsibility for any illegal activities carried out with this tool.
+
+Please note that this product currently does not have a stable version and is still under development. As a result, the expected speeds and features are subject to change and may not be available at this time. Use at your own risk.
 
 ## Authors
 
