@@ -13,16 +13,8 @@ class color:
     END = '\033[0m'
 
 
-def find_pattern(pattern, value):
-    import re
-    x = re.search(pattern, value)
-    if x:
-        return x
-    else:
-        return None
-
-
 class Port:
+    import re
     top_1000 = [
         7, 9, 13, 21, 22, 23, 25, 37, 53, 79, 80, 81, 88, 106, 110, 111,
         113, 119, 135, 139, 143, 179, 199, 389, 427, 443, 444, 445, 465, 513,
@@ -44,8 +36,10 @@ class Port:
         return result
 
     async def check_port(self, red,writer,addr,port):
+        import re
         response = None
         if port == 80:
+            # print("[*] Check port 80 [*]")
             query = f"GET / HTTP/1.1\r\nHost: {addr}\r\n\r\n"
             writer.write(query.encode())
             await writer.drain()
@@ -54,19 +48,22 @@ class Port:
                 if not resp:
                     break
                 response = resp
-            # print(response)
             writer.close()
             await writer.wait_closed()
-            # router
-            split_response = str(response).split("\\r\\n")
-            try:
-                for x in split_response:
-                    if x.startswith("WWW-Authenticate"):
-                        info = x.split(":")[1].split("=")[1]
-                return info
-            except Exception as e:
+            match = re.search(r'realm="(.+)"', response.decode())
+            if match:
+                return match.group(1)
+            else:
                 return False
-        # pass
 
     def script_execute(self, code):
         pass
+
+
+
+#             "date": date_info.group(1).decode(),
+            # "content": content_type_info.group(1).decode(),
+            # "transfer": transfer_encoding_info.group(1).decode(),
+            # "accpet-range": accept_ranges_info.group(1).decode(),
+            # "vary": vary_info.group(1).decode()
+            # }
