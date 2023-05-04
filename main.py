@@ -1,62 +1,103 @@
 from art import tprint
-from helpers import color
+from helpers import color, Port
 import sys
 import time
 import argparse
 from tabulate import tabulate
 from port_scan import Scanner
+from datetime import datetime
+
 debug = False
 if debug is not True:
     tprint("Spartan")
-    print(color.ITALIC + "\t We make shit safe again \n" + color.STOP_ITALIC)
-    print("v0.0.2 created by " + color.BOLD + "dannyx-hub\n" + color.END)
-parser = argparse.ArgumentParser(description="Tools to beat pussy scanners")
+    print(color.ITALIC + "\t With great power comes great responsibility \n" + color.STOP_ITALIC)
+    print("v0.0.3 created by " + color.BOLD + "dannyx-hub\n" + color.END)
+parser = argparse.ArgumentParser(description=" * "+color.ITALIC+"hacking music in background"+color.STOP_ITALIC+" *")
 parser.add_argument("--host", type=str, help="ip address")
 parser.add_argument("--port", type=str, help="port to scan if all print -a if range print example: 1-20")
 parser.add_argument("--mode", type=str, help="scan mode")
 parser.add_argument("--only_known_service", help="return only port with known services", action='store_true')
 parser.add_argument("--output", help="dump scan result to text file")
+parser.add_argument("--timeout",type=float, help="timeout for scanner")
+
 args = parser.parse_args()
-
-sc = Scanner()
+if len(sys.argv) == 1:
+    # parser.print_usage()
+    parser.print_help()
+    sys.exit(1)
 hostname = args.host
-port = args.port
-port_range = None
-udp = None
-
-# scan
-print("*" * 50)
-print(f"\tPort Scanner \nSpartan start to check ports on {hostname}")
-print("*" * 50)
+port = None
+result = None
+os_detection = False
+port_mode = ""
+mode = "no mode selected"
 if args.mode == "u":
-    print(" [*] udp mode activate [*] ")
+    mode = "udp scan"
     udp = True
+elif args.mode == "os":
+    # print("[*] os detection activate [*]"))
+    mode = "os detection"
+    os_detection = True
 if args.port == "a":
-    print(" [*] beat some rustscan mode activate [*] ")
-    port = None
+    # print(" [*] all ports [*] ")
+    port_mode = "all ports"
+    lst = [p for p in range(1, 65355 + 1)]
+    port = Port.split_port_lists(lst, 1100)
+elif args.port == "d":
+    port_mode = "top 1000 ports"
+    lst = Port.top_1000
+    port = [lst]
+
 else:
     if args.port.find("-") != -1:
-        port = None
         ports = args.port.split("-")
-        port_range = {"start": int(ports[0]), "stop": int(ports[1])}
-        print(port_range)
+        port_mode = "range between {}-{}".format(ports[0],ports[1])
+        lst = [p for p in range(int(ports[0]), int(ports[1]))]
+        if len(lst) > 1000:
+            port = Port.split_port_lists(lst, 10)
+        else:
+            port = [lst]
+
     else:
-        port = int(args.port)
-result = sc.scan(hostname=hostname, port=port, port_range=port_range, udp=udp)
-if result:
-    print(color.GREEN + "Result for {}:".format(hostname) + color.END)
-    print(f"found: {len(result)}")
-    header = ['TYPE', 'PORT', 'STATUS', 'SERVICE', 'INFO']
+        port = [[int(args.port)]]
+        port_mode = "single port {}".format(args.port)
+print("=" * 50)
+print(f"Spartan start checks ports on "+color.BOLD+f"{hostname}"+color.END)
+print("Date: {} ".format(datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
+print(f"Scanner options: \n\t\t"+color.BOLD+"port: "+color.END+f" {port_mode}\n\t\t"+color.BOLD+f"scan mode: "+color.END+f"{mode}")
+print("=" * 50)
+if port:
+    if args.port == "a" or args.mode == "os":
+        print("\n[?] "+color.YELLOW+"Warning"+color.END+" selected options may increase the scanning time [?]")
+        timeout = 2.9
+    else:
+        timeout = 0.5
+    timer = time.perf_counter()
+    result = Scanner(hostname, port, timeout,os_detection)
+    result.execute()
+    stop = time.perf_counter()
+if result.scan_list:
+    print(color.GREEN + "\nResult for {}:".format(hostname) + color.END)
+    print(f"found: {len(result.scan_list)}")
+    if os_detection:
+        header = [color.BOLD+'TYPE', 'PORT', 'STATUS', 'SERVICE', 'INFO'+color.END]
+    else:
+        header = [color.BOLD+'TYPE', 'PORT', 'STATUS', 'SERVICE'+color.END]
     if args.only_known_service:
-        table_data = [[x['type'], x['port'], x['status'], x['service'], x['info']]
-                      for x in result if x['service'] is not None]
+        if os_detection:
+            table_data = [[x['type'], x['port'], x['status'], x['service'], x['info']] for x in result.scan_list if x['service'] is not None]
+        else:
+            table_data = [[x['type'], x['port'], x['status'], x['service']] for x in result.scan_list if x['service'] is not None]
     else:
-        table_data = [[x['type'], x['port'], x['status'], x['service'], x['info']] for x in result]
-    print(tabulate(table_data, headers=header))
+        if os_detection:
+            table_data = [[x['type'], x['port'], x['status'], x['service'], x['info']] for x in result.scan_list]
+        else:
+            table_data = [[x['type'], x['port'], x['status'], x['service']] for x in result.scan_list]
+    print("\n"+tabulate(table_data, headers=header, tablefmt="plain"))
     if args.output:
         with open(args.output, "a") as outfile:
-            outfile.writelines(tabulate(table_data, headers=header))
+            outfile.writelines(tabulate(table_data, headers=header, tablefmt="plain"))
 else:
     print(color.RED + "Result for {}: no open ports founds".format(hostname) + color.END)
-print("\nProgram end in: " + color.BOLD + "{}".format(time.process_time()) + color.END)
+print("\nProgram end in: " + color.BOLD + "{}".format(round(stop - timer, 2)) + color.END+"s")
 sys.exit(0)
