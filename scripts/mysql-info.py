@@ -20,6 +20,3 @@ def get_mysql_info(host, port):
         return False, e
     finally:
         sock.close()
-# for x in result:
-#     if x['port'] == 3306:
-print(get_mysql_info('85.128.212.192',3306))
