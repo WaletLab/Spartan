@@ -14,29 +14,55 @@ Additionally, thanks to custom scripts, you can fully automate your work and tur
 
 
 
-    $ python main.py --host 127.0.0.1 --port 22
-    ____                       _                 
-    / ___|  _ __    __ _  _ __ | |_   __ _  _ __  
-    \___ \ | '_ \  / _` || '__|| __| / _` || '_ \ 
-    ___) || |_) || (_| || |   | |_ | (_| || | | |
-    |____/ | .__/  \__,_||_|    \__| \__,_||_| |_|
-        |_|                                    
+```    $ python spartan.py --host 81.143.78.93 --port d --script scripts/geoloc.py 
+ ____                       _                 
+/ ___|  _ __    __ _  _ __ | |_   __ _  _ __  
+\___ \ | '_ \  / _` || '__|| __| / _` || '_ \ 
+ ___) || |_) || (_| || |   | |_ | (_| || | | |
+|____/ | .__/  \__,_||_|    \__| \__,_||_| |_|
+       |_|                                    
 
-        We make shit safe again 
+     With great power comes great responsibility 
 
-    v0.0.2 created by dannyx-hub
+v0.0.5 created by dannyx-hub
+==================================================
+Spartan start checks ports on 127.0.0.1
+Date: 2023-06-11 11:19:46 
+Scanner options: 
+port:  top used ports
+scan mode: no mode selected
+script_path: scripts/geoloc.py
+==================================================
 
-    **************************************************
-        Port Scanner 
-    Spartan start to check ports on 127.0.0.1
-    **************************************************
-    Result for 127.0.0.1:
-    found: 1
-    TYPE      PORT  STATUS    SERVICE    INFO
-    ------  ------  --------  ---------  ------------------------------------------
-    tcp         22  OPEN      ssh        SSH-2.0-OpenSSH_6.6.1p1 Ubuntu-2ubuntu2.13
+Result for 127.0.0.1:
+found: 2
 
-    Program end in: 0.06409557
+TYPE      PORT  STATUS    SERVICE
+TCP       5005  OPEN      unknown
+TCP         80  OPEN      http
+
+==================================================
+Spartan execute scripts/geoloc.py
+==================================================
+Geolocalization results:
+
+status: success
+country: Poland
+countryCode: PL
+region: PL
+regionName: Poland
+city: City of Wałrzych
+zip: EC2V
+lat: 514.5112354
+lon: -04.0981412352
+timezone: Europe/Wałbrzych
+isp: WaletSec 
+org: WaletSec org
+as: Walet Telecomunications
+query: 127.0.0.1
+
+Program end in: 0.55s
+```
 
 ## Features
 
