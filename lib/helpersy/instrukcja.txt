@@ -1,0 +1,17 @@
+Instrukcja uruchomienia aplikacji lokalnie:
+Potrzebne komponenty:
+
+Python najnowsza wersja
+mariadb najnowsza wersja
+
+
+
+- Rozpakowujemy zip z plikami 
+- Aktywujemy środowisko wirtualne z zainstalowanymi pakietami pythona
+- uzupelniamy config.ini
+- środowisko uruchamiamy za pomoca:
+	windows - park/bin/activate.bat
+	linux - source park/bin/activate
+
+- Po uruchomieniu środwiska uruchamiamy plik pythona
+	python main.py

@@ -1,5 +1,5 @@
 from art import tprint
-from lib.helpers import color, Port
+from lib.helpersy.helpers import color, Port
 import sys
 import time
 import argparse
@@ -41,8 +41,8 @@ def app():
         lst = [p for p in range(1, 65355 + 1)]
         port = Port.split_port_lists(lst, 1100)
     elif args.port == "d":
-        port_mode = "top 1000 ports"
-        lst = Port.top_1000
+        port_mode = "top used ports"
+        lst = Port.top_ports
         port = [lst]
 
     else:
@@ -61,7 +61,7 @@ def app():
     if args.basic is False:
         tprint("Spartan")
         print(color.ITALIC + "\t With great power comes great responsibility \n" + color.STOP_ITALIC)
-        print("v0.0.4 created by " + color.BOLD + "dannyx-hub\n" + color.END)
+        print("v0.0.5 created by " + color.BOLD + "dannyx-hub\n" + color.END)
         print("=" * 50)
         print(f"Spartan start checks ports on "+color.BOLD+f"{hostname}"+color.END)
         print("Date: {} ".format(datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
@@ -73,6 +73,9 @@ def app():
             timeout = 2.9
         else:
             timeout = 0.5
+
+        if args.mode == "os":
+            print("\n"+color.BLUE+"Info:"+color.END+" os scan works only with this ports:\n21,22,80,443,8080\n")
         timer = time.perf_counter()
         result = Scanner(hostname, port, timeout,os_detection)
         result.execute()

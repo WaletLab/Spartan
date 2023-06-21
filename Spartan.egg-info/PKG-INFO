@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: Spartan
+Version: 0.0.4
+Summary: TCP/IP port scanner written in python
+Home-page: https://github.org/dannyx-hub/Spartan
+Author: dannyx-hub
+Author-email: daro322.dp@gmail.com
+License:  GPL-3.0 license

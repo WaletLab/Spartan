@@ -2,7 +2,7 @@ import socket
 import time
 from contextlib import contextmanager
 import asyncio
-from .helpers import Port
+from .helpersy.helpers import Port
 
 
 class Scanner:
@@ -16,7 +16,7 @@ class Scanner:
         self._loop = asyncio.new_event_loop()
         self.temp = []
         self.response = None
-        self.mode = mode
+        self.mode = mode 
 
     @property
     def _scan_tasks(self):
@@ -44,17 +44,31 @@ class Scanner:
         try:
             red, writer = await asyncio.wait_for(
                 asyncio.open_connection(addr, port), timeout=self.timeout)
-            if self.mode is not False:
+            if self.mode:
                 info = await Port().check_port(addr=addr, port=port, red=red, writer=writer)
             if info:
-                temp_dict['info'] = info
+                data = ""
+                if info['serv_info']:
+                    data += '\n'.join([f"{k}: {v}" for k, v in info['serv_info'].items()]) + "\n"
+                if info['realm']:
+                    data += '\n'.join([f"{k}: {v}" for k, v in info['realm'].items()]) + "\n"
+                if info['cms_check']:
+                    data += "wordpress: " + str(info['cms_check']['wordpress']) + "\n"
+                    if 'plugins' in info['cms_check']:
+                        data += "Plugins:\n"
+                        existing_plugins = set()
+                        for x in info['cms_check']['plugins']:
+                            if x not in existing_plugins:
+                                data += str(x) + "\n"
+                                existing_plugins.add(x)
+                temp_dict['info'] = data
             temp_dict['status'] = "OPEN"
             self.scan_list.append(temp_dict)
-        except (ConnectionRefusedError, OSError, asyncio.TimeoutError):
+        except (ConnectionRefusedError,asyncio.TimeoutError, OSError):
             pass
         try:
             temp_dict['service'] = socket.getservbyport(port)
-        except OSError:
+        except (OSError,UnicodeDecodeError):
             temp_dict['service'] = 'unknown'
 
     def execute(self):
