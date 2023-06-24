@@ -3,11 +3,12 @@ from lib.helpersy.helpers import color, Port
 import sys
 import time
 import argparse
+import asyncio
 from tabulate import tabulate
 from lib.port_scan import Scanner
 from datetime import datetime
 from lib.script_execute import ScriptExecute
-
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 def app():
     parser = argparse.ArgumentParser(description=" * "+color.ITALIC+"hacking music in background"+color.STOP_ITALIC+" *")
     parser.add_argument("--host", type=str, help="ip address")
