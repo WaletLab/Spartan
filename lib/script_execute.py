@@ -1,6 +1,7 @@
 
 from io import StringIO
 import sys
+import traceback
 
 class ScriptExecute():
     def __init__(self,path,host=None,result=None):
@@ -21,6 +22,6 @@ class ScriptExecute():
                 output = stream.getvalue()
                 return output
         except Exception as e:
-            # print(e)
-            return False,e
+            print(traceback.format_exc())
+
         
