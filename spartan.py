@@ -4,6 +4,7 @@ import sys
 import time
 import argparse
 import asyncio
+from tqdm import tqdm
 from tabulate import tabulate
 from lib.port_scan import Scanner
 from datetime import datetime
@@ -40,7 +41,7 @@ def app():
     if args.port == "a":
         port_mode = "all ports"
         lst = [p for p in range(1, 65355 + 1)]
-        port = Port.split_port_lists(lst, 1100)
+        port = Port.split_port_lists(lst, 500)
     elif args.port == "d":
         port_mode = "top used ports"
         lst = Port.top_ports
@@ -62,7 +63,7 @@ def app():
     if args.basic is False:
         tprint("Spartan")
         print(color.ITALIC + "\t With great power comes great responsibility \n" + color.STOP_ITALIC)
-        print("v0.0.5 created by " + color.BOLD + "dannyx-hub\n" + color.END)
+        print("v0.0.6 created by " + color.BOLD + "dannyx-hub\n" + color.END)
         print("=" * 50)
         print(f"Spartan start checks ports on "+color.BOLD+f"{hostname}"+color.END)
         print("Date: {} ".format(datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
@@ -70,7 +71,7 @@ def app():
         print("=" * 50)
     if port:
         if args.port == "a" or args.mode == "os":
-            print("\n[?] "+color.YELLOW+"Warning"+color.END+" selected options may increase the scanning time [?]")
+            print("\n[?] "+color.YELLOW+"Warning"+color.END+" selected options may increase the scanning time [?]\n")
             timeout = 2.9
         else:
             timeout = 0.5
@@ -78,26 +79,38 @@ def app():
         if args.mode == "os":
             print("\n"+color.BLUE+"Info:"+color.END+" os scan works only with this ports:\n21,22,80,443,8080\n")
         timer = time.perf_counter()
-        result = Scanner(hostname, port, timeout,os_detection)
-        result.execute()
+        result = []
+        if args.port == "a":
+            # result = []
+            for x in tqdm(port):
+                res = Scanner(hostname,[x],timeout,os_detection)
+                res.execute()
+                if len(res.scan_list) !=0:
+                    result.append(*res.scan_list)
+                
+        else:
+            res = Scanner(hostname, port, timeout,os_detection)
+            res.execute()
+            if len(res.scan_list) !=0:
+                    result.append(*res.scan_list)
         stop = time.perf_counter()
-    if result.scan_list:
+    if result:
         print(color.GREEN + "\nResult for {}:".format(hostname) + color.END)
-        print(f"found: {len(result.scan_list)}")
+        print(f"found: {len(result)}")
         if os_detection:
             header = [color.BOLD+'TYPE', 'PORT', 'STATUS', 'SERVICE', 'INFO'+color.END]
         else:
             header = [color.BOLD+'TYPE', 'PORT', 'STATUS', 'SERVICE'+color.END]
         if args.only_known_service:
             if os_detection:
-                table_data = [[x['type'], x['port'], x['status'], x['service'], x['info']] for x in result.scan_list if x['service'] is not None]
+                table_data = [[x['type'], x['port'], x['status'], x['service'], x['info']] for x in result if x['service'] is not None]
             else:
-                table_data = [[x['type'], x['port'], x['status'], x['service']] for x in result.scan_list if x['service'] is not None]
+                table_data = [[x['type'], x['port'], x['status'], x['service']] for x in result if x['service'] is not None]
         else:
             if os_detection:
-                table_data = [[x['type'], x['port'], x['status'], x['service'], x['info']] for x in result.scan_list]
+                table_data = [[x['type'], x['port'], x['status'], x['service'], x['info']] for x in result]
             else:
-                table_data = [[x['type'], x['port'], x['status'], x['service']] for x in result.scan_list]
+                table_data = [[x['type'], x['port'], x['status'], x['service']] for x in result]
         print("\n"+tabulate(table_data, headers=header, tablefmt="plain"))
         if args.output: 
             outfile_name = f"{hostname}_output.txt"
