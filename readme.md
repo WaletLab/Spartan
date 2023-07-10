@@ -71,6 +71,16 @@ Program end in: 0.55s
 - Gui version(in progress)
 - CMS detection
 
+## Install
+If you want to install Spartan, just clone the repository and install the required modules using pip (it is recommended to install it in a fresh virtual environment).
+```sh
+pip install -r requirements.txt
+```
+## Run
+To run Spartan, simply type:
+```sh
+python spartan.py --host 127.0.0.1 --port d
+```
 
 ## Contributing
 
