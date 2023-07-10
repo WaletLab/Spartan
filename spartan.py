@@ -81,18 +81,19 @@ def app():
         timer = time.perf_counter()
         result = []
         if args.port == "a":
-            # result = []
+            result = []
             for x in tqdm(port):
                 res = Scanner(hostname,[x],timeout,os_detection)
                 res.execute()
                 if len(res.scan_list) !=0:
-                    result.append(*res.scan_list)
+                    
+                    result.extend(res.scan_list)
                 
         else:
             res = Scanner(hostname, port, timeout,os_detection)
             res.execute()
             if len(res.scan_list) !=0:
-                    result.append(*res.scan_list)
+                    result.extend(res.scan_list)
         stop = time.perf_counter()
     if result:
         print(color.GREEN + "\nResult for {}:".format(hostname) + color.END)
