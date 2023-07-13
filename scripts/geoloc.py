@@ -1,6 +1,6 @@
 import requests
 import json
-from lib.helpersy.helpers import color
+from lib.helpers.helpers import color
 
 if host:
     response = requests.get('http://ip-api.com/json/{}'.format(host))

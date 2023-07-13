@@ -37,7 +37,7 @@ class Port:
 
     async def check_port(self, red, writer, addr, port):
         import socket
-        from lib.helpersy.cms_detector import detector
+        from lib.helpers.cms_detector import detector
         def realm_check(response):
             import re
             match = re.search(r'realm="(.+)"', response.decode())
