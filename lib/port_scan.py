@@ -2,7 +2,7 @@ import socket
 import time
 from contextlib import contextmanager
 import asyncio
-from .helpersy.helpers import Port
+from .helpers.helpers import Port
 
 
 class Scanner:

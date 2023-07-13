@@ -1,6 +1,7 @@
 from art import tprint
-from lib.helpersy.helpers import color, Port
+from lib.helpers.helpers import color, Port
 import sys
+import os
 import time
 import argparse
 import asyncio
@@ -9,20 +10,24 @@ from tabulate import tabulate
 from lib.port_scan import Scanner
 from datetime import datetime
 from lib.script_execute import ScriptExecute
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 def app():
-    parser = argparse.ArgumentParser(description=" * "+color.ITALIC+"hacking music in background"+color.STOP_ITALIC+" *")
-    parser.add_argument("--host", type=str, help="ip address")
-    parser.add_argument("--port", type=str, help="port to scan if all print 'a' if range print example: 1-20, or if just want to check top 1000 tcp port just print 'd' ")
+    parser = argparse.ArgumentParser(description=" * "+color.ITALIC+"hacking music in background"+color.STOP_ITALIC+" *", add_help=False)
+    parser.add_argument("--help", action="store_true", help="show this reference")
+    parser.add_argument("--host", "-h", type=str, help="ip address")
+    parser.add_argument("--port", "-p", type=str, help="port to scan if all print 'a' if range print example: 1-20, or if just want to check top 1000 tcp port just print 'd' ")
     parser.add_argument("--mode", type=str, help="scan mode")
     parser.add_argument("--only_known_service", help="return only port with known services", action='store_true')
     parser.add_argument("--output", help="dump scan result to text file", action='store_true')
-    parser.add_argument("--script",help="path to your script")
+    parser.add_argument("--script",help="path to your script", action='append')
     parser.add_argument("--timeout",type=float, help="timeout for scanner")
     parser.add_argument("--basic", help="return only scan result",action="store_true")
 
     args = parser.parse_args()
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 1 or args.help:
         parser.print_help()
         sys.exit(1)
     hostname = args.host
@@ -31,7 +36,7 @@ def app():
     os_detection = False
     port_mode = ""
     mode = "no mode selected"
-    script_path = args.script
+    scripts = args.script
     if args.mode == "u":
         mode = "udp scan"
         udp = True
@@ -67,7 +72,7 @@ def app():
         print("=" * 50)
         print(f"Spartan start checks ports on "+color.BOLD+f"{hostname}"+color.END)
         print("Date: {} ".format(datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
-        print(f"Scanner options: \n"+color.BOLD+"port: "+color.END+f" {port_mode}\n"+color.BOLD+f"scan mode: "+color.END+f"{mode}"+color.BOLD+"\nscript_path"+color.END+f": {script_path}")
+        print(f"Scanner options: \n"+color.BOLD+"port: "+color.END+f" {port_mode}\n"+color.BOLD+f"scan mode: "+color.END+f"{mode}"+color.BOLD+"\nscripts"+color.END+f": {scripts}")
         print("=" * 50)
     if port:
         if args.port == "a" or args.mode == "os":
@@ -126,10 +131,15 @@ def app():
         if args.script:
             if args.basic is False:
                 print("\n"+"="*50)
-                print("Spartan execute {}".format(args.script))
+                print("Spartan execute\n{}".format("\n".join(args.script)))
                 print("="*50)
-            s = ScriptExecute(args.script,hostname,result.scan_list)
-            result = s.execute()
+            for script in args.script:
+                if script == os.path.basename(script):
+                    full_path = os.path.join(os.path.dirname(__file__), "scripts", script)
+                else:
+                    full_path = script
+                s = ScriptExecute(full_path,hostname,result)
+                s.execute()
     else:
         print(color.RED + "Result for {}: no open ports founds".format(hostname) + color.END)
     print("\nProgram end in: " + color.BOLD + "{}".format(round(stop - timer, 2)) + color.END+"s")
