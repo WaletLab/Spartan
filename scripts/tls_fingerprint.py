@@ -1,3 +1,4 @@
+print("start script")
 import socket
 for x in result:
     if x['port'] = 443:
@@ -58,7 +59,7 @@ for x in result:
             print(f"\t{ext}")
 
         ja3s = str(server_version_major << 8 | server_version_minor) + "," + str(cipher_suite[0] << 8 | cipher_suite[1]) + ","
-        ja3s += "-".join([str(e[0]) + "-" + str(e[1]) + "-".join([str(v) for v in e[2]]) for e in extensions])
+        ja3s += "-".join([str(e[0]) for e in extensions])
         import hashlib
         ja3s = hashlib.md5(ja3s.encode("ascii")).hexdigest()
         print("\nJA3S", ja3s)
