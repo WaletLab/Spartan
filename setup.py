@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="Spartan",
-    version='v0.0.4',
+    name="spartan",
+    version='v0.1.0',
     description='TCP/IP port scanner written in python',
     url="https://github.org/dannyx-hub/Spartan",
     author="dannyx-hub",
@@ -12,7 +12,7 @@ setup(
     packages=find_packages(),
     entry_points={
     'console_scripts': [
-        'spartan=Spartan.main:app',
+        'spartan=spartan:app',
     ],
 },
 
