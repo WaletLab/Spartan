@@ -1,12 +1,13 @@
 import sys
+sys.path.append("../Spartan")
 import os
 import time
 import argparse
 from tabulate import tabulate
 from datetime import datetime
-from lib.script_execute import ScriptExecute
-from lib.port_scan import Scanner
-from lib.helpers.helpers import color, Port
+from Spartan.lib.script_execute import ScriptExecute
+from Spartan.lib.port_scan import Scanner
+from Spartan.lib.helpers.helpers import color, Port
 from art import tprint
 
 

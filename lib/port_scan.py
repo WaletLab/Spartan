@@ -5,8 +5,8 @@ import sys
 import threading
 from queue import Queue
 from struct import *
-from lib.packet import Packet
-from lib.objects import Ports, Counter, Printer
+from Spartan.lib.packet import Packet
+from Spartan.lib.objects import Ports, Counter, Printer
 
 
 class Scanner:
