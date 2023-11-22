@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-
+print(find_packages())
 setup(
     name="spartan",
     version='v0.1.0',
@@ -8,12 +8,12 @@ setup(
     author="dannyx-hub",
     author_email="daro322.dp@gmail.com",
     license=" GPL-3.0 license",
-    install_requires=['tabulate','art'],
+    install_requires=['tabulate', 'art'],
     packages=find_packages(),
     entry_points={
-    'console_scripts': [
-        'spartan=spartan:app',
-    ],
-},
+        'console_scripts': [
+            'spartan=spartan:app',
+        ],
+    },
 
 )
