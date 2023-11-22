@@ -40,7 +40,7 @@ class Ports:
             print(port)
 
     def get_services(self):
-        with open('lib/nmap-services', 'rt') as nmap_file:
+        with open('Spartan/lib/nmap-services', 'rt') as nmap_file:
             for port in sorted(self.ports):
                 regex = re.compile(r'^.+\s' + re.escape(str(port)) + r'/tcp\s.+$')
                 for line in nmap_file:

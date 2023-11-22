@@ -57,7 +57,7 @@ def app():
         port_mode = f"single port"
         mode = f"single port - {port}"
     if args.basic is False:
-        tprint("Spartan")
+        tprint("CyberSpartan")
         print(color.ITALIC + "\t With great power comes great responsibility \n" + color.STOP_ITALIC)
         print("v0.1.0 created by " + color.BOLD + "dannyx-hub\n" + color.END)
         print("=" * 50)
