@@ -1,5 +1,5 @@
 
-# Spartan
+# CyberSpartan
 
 Python-based TCP/UDP port scanner project. It is designed to scan a target system for open ports using either TCP or UDP protocols. 
 

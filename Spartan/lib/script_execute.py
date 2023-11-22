@@ -16,12 +16,10 @@ class ScriptExecute():
                           "host": self.host}
                 stream = StringIO()
                 sys.stdout = stream
-                compiled_code = compile(lines,'<string>','exec')
+                compiled_code = compile(lines, '<string>', 'exec')
                 sys.stdout = sys.__stdout__
-                exec(compiled_code,locals)
+                exec(compiled_code, locals)
                 output = stream.getvalue()
                 return output
-        except Exception as e:
+        except Exception:
             print(traceback.format_exc())
-
-        

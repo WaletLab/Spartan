@@ -1,5 +1,6 @@
 import socket
 
+
 def get_mysql_info(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
