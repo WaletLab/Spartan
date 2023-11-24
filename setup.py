@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-print(find_packages())
 setup(
     name="cyberspartan",
     version='v0.1.0',
