@@ -3,6 +3,7 @@ setup(
     name="cyberspartan",
     version='v0.1.0',
     description='TCP/IP port scanner written in python',
+    long_description=None,
     url="https://github.org/dannyx-hub/Spartan",
     author="dannyx-hub",
     author_email="daro322.dp@gmail.com",
