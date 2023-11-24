@@ -59,7 +59,7 @@ Bug Reports
 -----------
 
 If you encounter any issues or bugs, please report them on GitHub: https://github.org/dannyx-hub/Spartan/issues
-""",,
+""",
     url="https://github.org/dannyx-hub/Spartan",
     author="dannyx-hub",
     author_email="daro322.dp@gmail.com",
