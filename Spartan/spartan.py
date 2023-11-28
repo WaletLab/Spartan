@@ -59,7 +59,7 @@ def app():
     if args.basic is False:
         tprint("CyberSpartan")
         print(color.ITALIC + "\t With great power comes great responsibility \n" + color.STOP_ITALIC)
-        print("v0.1.0 created by " + color.BOLD + "dannyx-hub\n" + color.END)
+        print("v0.1.1 created by " + color.BOLD + "dannyx-hub\n" + color.END)
         print("=" * 50)
         print(f"Spartan start checks ports on " + color.BOLD + f"{hostname}" + color.END)
         print("Date: {} ".format(datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
