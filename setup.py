@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name="cyberspartan",
-    version='v0.1.0',
+    version='v0.1.1',
     description='TCP/IP port scanner written in python',
     long_description="""
 CyberSpartan
