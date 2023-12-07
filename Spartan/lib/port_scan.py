@@ -59,7 +59,7 @@ class Scanner:
         listen = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
         # listen.settimeout(5)
         print("jestem tutaj")
-        while self.event.is_set():
+        while not self.event.is_set():
             try:
                 print("jestem w while")
                 packet = listen.recv(65565)
