@@ -73,7 +73,7 @@ class Scanner:
                 src_port = tcp_header[0]
                 flag = tcp_header[5]
                 print(flag)
-                if flag == 18:  # SYN-ACK
+                if flag == 16:  # SYN-ACK
                     with self.open_ports_lock:
                         self.open_ports.add(src_port)
             except Exception as e:
