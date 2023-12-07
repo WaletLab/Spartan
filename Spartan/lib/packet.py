@@ -1,75 +1,99 @@
-import random
 import socket
-from struct import *
+from struct import pack
+# from scapy.all import IP, TCP
+from construct import Struct, Int8ul, Int16ul, Int32ul, Bytes
 
 
 class Packet:
+    def __init__(self, source_ip, destination_ip, destination_port):
+        self.source_ip = source_ip
+        self.destination_ip = destination_ip
+        self.destination_port = destination_port
+        self.raw = self.build_packet()
 
-    def __init__(self, src_ip, dest_ip, dest_port):
-        # IP segment #
-        self.ver = 0x4
-        self.ihl = 0x5
-        self.type_of_serv = 0x0
-        self.total_len = 0x42
-        self.ident = random.randint(1, 45535)
-        self.flags = 0x2
-        self.fragment_offset = 0x0
-        self.ttl = 0x40
-        self.protocol = 0x6
-        self.header_checksum = 0x0
-        self.src_ip = src_ip
-        self.dest_ip = dest_ip
-        self.src_addr = socket.inet_aton(self.src_ip)
-        self.dest_addr = socket.inet_aton(self.dest_ip)
-        self.v_ihl = (self.ver << 4) + self.ihl
-        self.f_fo = (self.flags << 13) + self.fragment_offset
+    # def build_packet(self):
+    #     # Budowanie nagłówka IP
+    #     ip_header = pack('!BBHHHBBH4s4s', 69, 5, 20, 0, 0, 64, 6, 0, socket.inet_aton(self.source_ip), socket.inet_aton(self.destination_ip))
 
-        _tmp_ip_header = pack("!BBHHHBBH4s4s", self.v_ihl, self.type_of_serv, self.total_len,
-                              self.ident, self.f_fo, self.ttl, self.protocol,
-                              self.header_checksum, self.src_addr, self.dest_addr)
+    #     # Budowanie nagłówka TCP
+    #     tcp_header = pack('!HHLLBBHHH', 12345, self.destination_port, 0, 0, 5 << 4, 2, 8192, 0, 0)
 
-        self.ip_header = pack("!BBHHHBBH4s4s", self.v_ihl, self.type_of_serv, self.total_len,
-                              self.ident, self.f_fo, self.ttl, self.protocol,
-                              self.calc_checksum(_tmp_ip_header), self.src_addr, self.dest_addr)
+    #     # Pseudo-nagłówek
+    #     pseudo_header = pack('!4s4sBBH', socket.inet_aton(self.source_ip), socket.inet_aton(self.destination_ip), 0, 6, len(tcp_header))
+
+    #     # Suma kontrolna
+    #     checksum = self.calculate_checksum(pseudo_header + tcp_header)
+
+    #     # Ustawienie sumy kontrolnej w nagłówku TCP
+    #     tcp_header = tcp_header[:16] + pack('H', checksum) + tcp_header[18:]
+
+    #     # Łączenie nagłówków IP i TCP
+    #     packet = (ip_header + tcp_header)
+    #     print("Długość pakietu {}".format(len(packet)))
+    #     return packet
+    def build_packet(self):
+        ip_header = Struct(
+            "version_ihl" / Int8ul,
+            "dscp_ecn" / Int8ul,
+            "total_length" / Int16ul,
+            "identification_flags_fragment_offset" / Int32ul,
+            "ttl_protocol_checksum" / Int32ul,
+            "source_ip" / Bytes(4),
+            "destination_ip" / Bytes(4),
+        )
+
+        tcp_header = Struct(
+            "source_port" / Int16ul,
+            "destination_port" / Int16ul,
+            "sequence_number" / Int32ul,
+            "acknowledgment_number" / Int32ul,
+            "data_offset_flags_window" / Int32ul,
+            "checksum_urgent_pointer" / Int32ul,
+        )
+
+        ip_header_bytes = ip_header.build({
+            "version_ihl": 69,
+            "dscp_ecn": 0,
+            "total_length": 5,  # Długość nagłówka IP + długość nagłówka TCP
+            "identification_flags_fragment_offset": 0,
+            "ttl_protocol_checksum": (64 << 16) + 6,
+            "source_ip": socket.inet_aton(self.source_ip),
+            "destination_ip": socket.inet_aton(self.destination_ip),
+        })
+
+        tcp_header_bytes = tcp_header.build({
+            "source_port": 12345,
+            "destination_port": self.destination_port,
+            "sequence_number": 0,
+            "acknowledgment_number": 0,
+            "data_offset_flags_window": (5 << 12) + (2 << 9) + 8192,
+            "checksum_urgent_pointer": 0,
+        })
+
+        # Pole 'data offset' w nagłówku TCP reprezentuje długość w jednostkach 32-bitowych słów
+        data_offset = (len(tcp_header_bytes) // 4) << 4
+        tcp_header_bytes = tcp_header_bytes[:12] + Int8ul.build(data_offset) + tcp_header_bytes[13:]
+
+        pseudo_header = ip_header_bytes[:12] + b'\x00\x06' + Int16ul.build(len(tcp_header_bytes))
+
+        # Ustawienie checksum na 0 przed obliczeniem
+        tcp_header_bytes = tcp_header_bytes[:16] + Int16ul.build(0) + tcp_header_bytes[18:]
+
+        # Obliczenie sumy kontrolnej
+        checksum = self.calculate_checksum(pseudo_header + tcp_header_bytes)
+        tcp_header_bytes = tcp_header_bytes[:16] + Int16ul.build(checksum) + tcp_header_bytes[18:]
+
+        packet = ip_header_bytes + tcp_header_bytes
+        print("Długość pakietu {}".format(len(packet)))
+        return packet
 
 
-        # TCP header #
-        self.src_port = random.randint(1000, 9400)
-        self.dest_port = dest_port
-        self.seq_no = 0x0
-        self.ack_no = 0x0
-        self.data_offset = 0x5
-        self.reserved = 0x0
-        self.ns, self.cwr, self.ece, self.urg, self.ack, \
-            self.psh, self.rst, self.syn, self.fin = 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0
-        self.window_size = 0x7110
-        self.checksum = 0x0
-        self.urg_pointer = 0x0
-        self.data_offset_res_flags = ((self.data_offset << 12) + (self.reserved << 9) + (self.ns << 8) + (self.cwr << 7)
-                                      + (self.ece << 6) + (self.urg << 5) + (self.ack << 4) + (self.psh << 3)
-                                      + (self.rst << 2) + (self.syn << 1) + self.fin)
 
-        _tmp_tcp_header = pack("!HHLLHHHH", self.src_port, self.dest_port, self.seq_no,
-                               self.ack_no, self.data_offset_res_flags, self.window_size,
-                               self.checksum, self.urg_pointer)
-        pseudo_header = pack("!4s4sBBH", self.src_addr, self.dest_addr, self.checksum, self.protocol,
-                             len(_tmp_tcp_header))
-        psh = pseudo_header + _tmp_tcp_header
-        self.tcp_header = pack("!HHLLHHHH", self.src_port, self.dest_port, self.seq_no, self.ack_no,
-                                self.data_offset_res_flags, self.window_size, self.calc_checksum(psh),
-                                self.urg_pointer)
-
-        self.raw = self.ip_header + self.tcp_header
-
-    def calc_checksum(self, data):
-        check = 0
-        len_data = len(data)
-        if len_data % 2:
-            len_data += 1
-            data += pack('!B',0)
-        for i in range(0, len_data, 2):
-            w = (data[i] << 8 ) + (data[i+1])
-            check += w
-        check = (check >> 16) + (check & 0xFFFF)
-        check = ~check & 0xFFFF
-        return check
+    @staticmethod
+    def calculate_checksum(data):
+        if len(data) % 2 != 0:
+            data += b'\x00'
+        s = sum([int.from_bytes(data[i:i+2], byteorder='big') for i in range(0, len(data), 2)])
+        s = (s >> 16) + (s & 0xffff)
+        s = s + (s >> 16)
+        return ~s & 0xffff

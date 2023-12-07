@@ -2,11 +2,23 @@ import time
 import signal
 import socket
 import sys
+import os
+import fcntl
 import threading
 from queue import Queue
 from struct import *
 from Spartan.lib.packet import Packet
 from Spartan.lib.objects import Ports, Counter, Printer
+# from scapy.all import IP, TCP, send
+### poprawka dla macos
+# def enable_promiscuous_mode(interface):
+#     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+#     try:
+#         fcntl.ioctl(s.fileno(), 0x8913, pack('256s', bytes(interface[:15], 'utf-8')))
+#     except Exception as e:
+#         print(f"Błąd podczas włączania trybu promiskuitywnego: {e}")    
+
+# enable_promiscuous_mode("en0")
 
 
 class Scanner:
@@ -46,25 +58,34 @@ class Scanner:
     def listener(self):
         listen = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
         # listen.settimeout(5)
-        while not self.event.is_set():
-            packet = listen.recv(65565)
-            ip_header = unpack('!BBHHHBBH4s', packet[0:16])
-            ip_head_len = (ip_header[0] & 0xf) * 4
+        print("jestem tutaj")
+        while self.event.is_set():
+            try:
+                print("jestem w while")
+                packet = listen.recv(65565)
+                print(packet)
+                ip_header = unpack('!BBHHHBBH4s', packet[0:16])
+                ip_head_len = (ip_header[0] & 0xf) * 4
 
-            tcp_header_raw = packet[ip_head_len:ip_head_len + 14]
-            tcp_header = unpack('!HHLLBB', tcp_header_raw)
+                tcp_header_raw = packet[ip_head_len:ip_head_len + 14]
+                tcp_header = unpack('!HHLLBB', tcp_header_raw)
 
-            src_port = tcp_header[0]
-            flag = tcp_header[5]
-            if flag == 18:  # SYN-ACK
-                with self.open_ports_lock:
-                    self.open_ports.add(src_port)
-
+                src_port = tcp_header[0]
+                flag = tcp_header[5]
+                print(flag)
+                if flag == 18:  # SYN-ACK
+                    with self.open_ports_lock:
+                        self.open_ports.add(src_port)
+            except Exception as e:
+                print(e)
     def scan(self, port):
         packet = Packet(self.src_ip, self.target, port)
+        packet = packet.build_packet()
+        print(len(packet))
+        # print(packet.raw)
         s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
-        s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
-        s.sendto(packet.raw, (self.target, 0))
+        # s.setsockopt(socket.IPPROTO_IP, 1)
+        s.sendto(packet, (self.target, 0))
         s.close()
         self.pkt_counter.increment()
         if self.mode =="all ports" or self.mode == "range ports":
@@ -93,6 +114,7 @@ class Scanner:
 
         listener_thread = threading.Thread(target=self.listener, daemon=True)
         listener_thread.start()
+        print(listener_thread)
 
         for worker in self.jobs.ports:
             self.q.put(worker)
