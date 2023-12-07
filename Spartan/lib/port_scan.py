@@ -64,7 +64,7 @@ class Scanner:
                 print("jestem w while")
                 packet = listen.recv(65565)
                 # print(packet)
-                ip_header = unpack('!BBHHHBBH4s4s', packet[0:16])
+                ip_header = unpack('!BBHHHBBH4s4s', packet[0:20])
                 ip_head_len = (ip_header[0] & 0xf) * 4
 
                 tcp_header_raw = packet[ip_head_len:ip_head_len + 14]
