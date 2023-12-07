@@ -64,16 +64,16 @@ class Scanner:
                 print("jestem w while")
                 packet = listen.recv(65565)
                 # print(packet)
-                ip_header = unpack('!BBHHHBBH4s', packet[0:16])
+                ip_header = unpack('!BBHHHBBH4s4s', packet[0:16])
                 ip_head_len = (ip_header[0] & 0xf) * 4
 
                 tcp_header_raw = packet[ip_head_len:ip_head_len + 14]
-                tcp_header = unpack('!HHLLBB', tcp_header_raw)
+                tcp_header = unpack('!HHLLBBHHH', tcp_header_raw)
 
                 src_port = tcp_header[0]
                 flag = tcp_header[5]
                 print(flag)
-                if flag == 16:  # SYN-ACK
+                if flag == 18:  # SYN-ACK
                     with self.open_ports_lock:
                         self.open_ports.add(src_port)
             except Exception as e:
