@@ -1,7 +1,7 @@
 import socket
 from struct import pack
-# from scapy.all import IP, TCP
-from construct import Struct, Int8ul, Int16ul, Int32ul, Bytes
+from scapy.all import IP, TCP
+# from construct import Struct, Int8ul, Int16ul, Int32ul, Bytes
 
 
 class Packet:
@@ -9,28 +9,30 @@ class Packet:
         self.source_ip = source_ip
         self.destination_ip = destination_ip
         self.destination_port = destination_port
-        self.raw = self.build_packet()
+        # self.raw = self.build_packet()
 
     def build_packet(self):
-        # Budowanie nagłówka IP
-        ip_header = pack('!BBHHHBBH4s4s', 69, 5, 20, 0, 0, 64, 6, 0, socket.inet_aton(self.source_ip), socket.inet_aton(self.destination_ip))
-
-        # Budowanie nagłówka TCP
-        tcp_header = pack('!HHLLBBHHH', 12345, self.destination_port, 0, 0, 5 << 4, 2, 8192, 0, 0)
-
-        # Pseudo-nagłówek
-        pseudo_header = pack('!4s4sBBH', socket.inet_aton(self.source_ip), socket.inet_aton(self.destination_ip), 0, 6, len(tcp_header))
-
-        # Suma kontrolna
-        checksum = self.calculate_checksum(pseudo_header + tcp_header)
-
-        # Ustawienie sumy kontrolnej w nagłówku TCP
-        tcp_header = tcp_header[:16] + pack('H', checksum) + tcp_header[18:]
-
-        # Łączenie nagłówków IP i TCP
-        packet = (ip_header + tcp_header)
-        print("Długość pakietu {}".format(len(packet)))
-        return packet
+        packet = IP(dst=self.destination_ip)/TCP(dport=self.destination_port)
+        return bytes(packet)
+        # # Budowanie nagłówka IP
+        # ip_header = pack('!BBHHHBBH4s4s', 69, 5, 20, 0, 0, 64, 6, 0, socket.inet_aton(self.source_ip), socket.inet_aton(self.destination_ip))
+        #
+        # # Budowanie nagłówka TCP
+        # tcp_header = pack('!HHLLBBHHH', 12345, self.destination_port, 0, 0, 5 << 4, 2, 8192, 0, 0)
+        #
+        # # Pseudo-nagłówek
+        # pseudo_header = pack('!4s4sBBH', socket.inet_aton(self.source_ip), socket.inet_aton(self.destination_ip), 0, 6, len(tcp_header))
+        #
+        # # Suma kontrolna
+        # checksum = self.calculate_checksum(pseudo_header + tcp_header)
+        #
+        # # Ustawienie sumy kontrolnej w nagłówku TCP
+        # tcp_header = tcp_header[:16] + pack('H', checksum) + tcp_header[18:]
+        #
+        # # Łączenie nagłówków IP i TCP
+        # packet = (ip_header + tcp_header)
+        # print("Długość pakietu {}".format(len(packet)))
+        # return packet
     # def build_packet(self):
     #     ip_header = Struct(
     #         "version_ihl" / Int8ul,
