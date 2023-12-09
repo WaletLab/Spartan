@@ -79,7 +79,7 @@ class Scanner:
                 print(flags)
 
                 # Przykład warunku dla SYN-ACK
-                if flags == 0x12:  # SYN-ACK
+                if flags == 16:  # SYN-ACK
                     with self.open_ports_lock:
                         self.open_ports.add(src_port)
             except Exception as e:
