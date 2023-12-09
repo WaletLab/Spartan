@@ -1,4 +1,5 @@
 import time
+import traceback
 import signal
 import socket
 import sys
@@ -77,7 +78,7 @@ class Scanner:
                     with self.open_ports_lock:
                         self.open_ports.add(src_port)
             except Exception as e:
-                print(e)
+                print(traceback.format_exc(10))
     def scan(self, port):
         packet = Packet(self.src_ip, self.target, port)
         packet = packet.build_packet()
