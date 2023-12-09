@@ -59,22 +59,27 @@ class Scanner:
     def listener(self):
         listen = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
         # listen.settimeout(5)
-        print("jestem tutaj")
+        print("Jestem tutaj")
         while not self.event.is_set():
             try:
-                print("jestem w while")
+                print("Jestem w while")
                 packet = listen.recv(65565)
                 # print(packet)
+
+                # Parsowanie nagłówka IP
                 ip_header = unpack('!BBHHHBBH4s4s', packet[0:20])
                 ip_head_len = (ip_header[0] & 0xf) * 4
 
-                tcp_header_raw = packet[ip_head_len:ip_head_len + 14]
+                # Parsowanie nagłówka TCP
+                tcp_header_raw = packet[ip_head_len:ip_head_len + 20]  # 20 bajtów dla nagłówka TCP
                 tcp_header = unpack('!HHLLBBHHH', tcp_header_raw)
 
                 src_port = tcp_header[0]
-                flag = tcp_header[5]
-                print(flag)
-                if flag == 18:  # SYN-ACK
+                flags = tcp_header[5]
+                print(flags)
+
+                # Przykład warunku dla SYN-ACK
+                if flags == 0x12:  # SYN-ACK
                     with self.open_ports_lock:
                         self.open_ports.add(src_port)
             except Exception as e:
