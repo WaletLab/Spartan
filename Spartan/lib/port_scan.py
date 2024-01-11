@@ -51,27 +51,27 @@ class Scanner:
         while not self.event.is_set():
             try:
                 packet, addr = listen.recvfrom(65565)
-                print(packet)
-                print(f"Odebrano pakiet od {addr}")
+                # print(packet)
+                # print(f"Odebrano pakiet od {addr}")
                 
                 # Parsowanie nagłówka IP
-                # ip_header = unpack('!BBHHHBBH4s4s', packet[0:20])
-                # ip_head_len = (ip_header[0] & 0xf) * 4
+                ip_header = unpack('!BBHHHBBH4s4s', packet[0:20])
+                ip_head_len = (ip_header[0] & 0xf) * 4
 
-                # # Parsowanie nagłówka TCP
-                # tcp_header_raw = packet[ip_head_len:ip_head_len + 20]
-                # tcp_header = unpack('!HHLLBBHHH', tcp_header_raw)
+                # Parsowanie nagłówka TCP
+                tcp_header_raw = packet[ip_head_len:ip_head_len + 20]
+                tcp_header = unpack('!HHLLBBHHH', tcp_header_raw)
 
-                # src_port = tcp_header[0]
-                # flags = tcp_header[5]
+                src_port = tcp_header[0]
+                flags = tcp_header[5]
                 
                 # print(f"Numer portu źródłowego: {src_port}")
                 # print(f"Flagi: {flags}")
 
                 # # Przykład warunku dla SYN-ACK
-                # if flags == 18:  # SYN-ACK
-                #     with self.open_ports_lock:
-                #         self.open_ports.add(src_port)
+                if flags == 18:  # SYN-ACK
+                    with self.open_ports_lock:
+                        self.open_ports.add(src_port)
             except Exception as e:
                 print(f"Błąd: {str(e)}")
     def scan(self, port):
