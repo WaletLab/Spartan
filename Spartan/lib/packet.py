@@ -9,10 +9,11 @@ class Packet:
         self.source_ip = source_ip
         self.destination_ip = destination_ip
         self.destination_port = destination_port
+        print(self.destination_port)
         # self.raw = self.build_packet()
 
     def build_packet(self):
-        packet = IP(dst=self.destination_ip)/TCP(dport=self.destination_port)
+        packet = IP(dst=self.destination_ip)/TCP(dport=self.destination_port, flags="S")
         return bytes(packet)
         # # Budowanie nagłówka IP
         # ip_header = pack('!BBHHHBBH4s4s', 69, 5, 20, 0, 0, 64, 6, 0, socket.inet_aton(self.source_ip), socket.inet_aton(self.destination_ip))

@@ -10,17 +10,6 @@ from queue import Queue
 from struct import *
 from Spartan.lib.packet import Packet
 from Spartan.lib.objects import Ports, Counter, Printer
-# from scapy.all import IP, TCP, send
-### poprawka dla macos
-# def enable_promiscuous_mode(interface):
-#     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#     try:
-#         fcntl.ioctl(s.fileno(), 0x8913, pack('256s', bytes(interface[:15], 'utf-8')))
-#     except Exception as e:
-#         print(f"Błąd podczas włączania trybu promiskuitywnego: {e}")    
-
-# enable_promiscuous_mode("en0")
-
 
 class Scanner:
     def __init__(self, target, mode, range_start=None, range_end=None, port=None):
@@ -58,40 +47,42 @@ class Scanner:
 
     def listener(self):
         listen = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
-        # listen.settimeout(5)
         print("Jestem tutaj")
         while not self.event.is_set():
             try:
-                print("Jestem w while")
-                packet = listen.recv(65565)
-                # print(packet)
-
+                packet, addr = listen.recvfrom(65565)
+                print(packet)
+                print(f"Odebrano pakiet od {addr}")
+                
                 # Parsowanie nagłówka IP
-                ip_header = unpack('!BBHHHBBH4s4s', packet[0:20])
-                ip_head_len = (ip_header[0] & 0xf) * 4
+                # ip_header = unpack('!BBHHHBBH4s4s', packet[0:20])
+                # ip_head_len = (ip_header[0] & 0xf) * 4
 
-                # Parsowanie nagłówka TCP
-                tcp_header_raw = packet[ip_head_len:ip_head_len + 20]  # 20 bajtów dla nagłówka TCP
-                tcp_header = unpack('!HHLLBBHHH', tcp_header_raw)
+                # # Parsowanie nagłówka TCP
+                # tcp_header_raw = packet[ip_head_len:ip_head_len + 20]
+                # tcp_header = unpack('!HHLLBBHHH', tcp_header_raw)
 
-                src_port = tcp_header[0]
-                flags = tcp_header[5]
-                print(flags)
+                # src_port = tcp_header[0]
+                # flags = tcp_header[5]
+                
+                # print(f"Numer portu źródłowego: {src_port}")
+                # print(f"Flagi: {flags}")
 
-                # Przykład warunku dla SYN-ACK
-                if flags == 18:  # SYN-ACK
-                    with self.open_ports_lock:
-                        self.open_ports.add(src_port)
+                # # Przykład warunku dla SYN-ACK
+                # if flags == 18:  # SYN-ACK
+                #     with self.open_ports_lock:
+                #         self.open_ports.add(src_port)
             except Exception as e:
-                print(traceback.format_exc(10))
+                print(f"Błąd: {str(e)}")
     def scan(self, port):
+        print(port)
         packet = Packet(self.src_ip, self.target, port)
         packet = packet.build_packet()
         print(len(packet))
         # print(packet.raw)
         s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
         # s.setsockopt(socket.IPPROTO_IP, 1)
-        s.sendto(packet, (self.target, 0))
+        s.sendto(packet, (self.target, port))
         s.close()
         self.pkt_counter.increment()
         if self.mode =="all ports" or self.mode == "range ports":
