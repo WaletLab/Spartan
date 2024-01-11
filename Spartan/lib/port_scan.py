@@ -75,10 +75,8 @@ class Scanner:
             except Exception as e:
                 print(f"Błąd: {str(e)}")
     def scan(self, port):
-        print(port)
         packet = Packet(self.src_ip, self.target, port)
         packet = packet.build_packet()
-        print(len(packet))
         # print(packet.raw)
         s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
         # s.setsockopt(socket.IPPROTO_IP, 1)
@@ -111,7 +109,6 @@ class Scanner:
 
         listener_thread = threading.Thread(target=self.listener, daemon=True)
         listener_thread.start()
-        print(listener_thread)
 
         for worker in self.jobs.ports:
             self.q.put(worker)
