@@ -45,7 +45,6 @@ class Scanner:
 
     def listener(self):
         listen = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
-        # listen.settimeout(5)
         while not self.event.is_set():
             packet = listen.recv(65565)
             ip_header = unpack('!BBHHHBBH4s', packet[0:16])
@@ -71,7 +70,7 @@ class Scanner:
             time.sleep(0.01)
             progress = (self.pkt_counter / 65535) * 100
             progress = format(progress, '.0f')
-            if port == 65535:  # To fix scan ending on less then 100 %
+            if port == 65535:
                 time.sleep(0.1)
         else:
             time.sleep(0.5)
@@ -103,8 +102,6 @@ class Scanner:
 
         self.q.join()
 
-        # print("Scan completed")
-        # with self.open_ports_lock:
 
         self.open_ports.get_services()
 
