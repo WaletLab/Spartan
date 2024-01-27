@@ -5,7 +5,7 @@ import sys
 import threading
 from queue import Queue
 from struct import *
-from Spartan.lib.packet import Packet
+from Spartan.lib.packet import IPHeader, create_ip_packet
 from Spartan.lib.objects import Ports, Counter, Printer
 
 
@@ -44,29 +44,42 @@ class Scanner:
         return res
 
     def listener(self):
-        listen = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
+        import struct
+        listen = socket.socket(socket.AF_INET, socket.SOCK_RAW)
         while not self.event.is_set():
-            packet = listen.recv(65565)
-            ip_header = unpack('!BBHHHBBH4s', packet[0:16])
-            ip_head_len = (ip_header[0] & 0xf) * 4
-
-            tcp_header_raw = packet[ip_head_len:ip_head_len + 14]
-            tcp_header = unpack('!HHLLBB', tcp_header_raw)
-
-            src_port = tcp_header[0]
-            flag = tcp_header[5]
-            if flag == 18:  # SYN-ACK
-                with self.open_ports_lock:
-                    self.open_ports.add(src_port)
+            try:
+                packet = listen.recv(65565)
+                ip_header = packet[:20]
+                ip_fields = struct.unpack('!BBHHHBBH4s4s', ip_header)
+                ip_header_length = (ip_header[0] & 0xF) * 4
+                tcp_header = packet[20:40]
+                tcp_fields = struct.unpack('!HHLLBBHHH', tcp_header)
+                src_port = tcp_fields[0]
+                data_offset_reserved_flags = tcp_fields[4]
+                data_offset = (data_offset_reserved_flags >> 12) * 4  # Obliczenie offsetu danych w bajtach
+                reserved = (data_offset_reserved_flags >> 9) & 0x7
+                flags = data_offset_reserved_flags & 0x1FF
+                # print(flags if flags == 12 else flags)
+                print(flags)
+                if flags == 18:  # SYN-ACK
+                    with self.open_ports_lock:
+                        self.open_ports.add(src_port)
+            except Exception as e:
+                print(f"error {e}")
 
     def scan(self, port):
-        packet = Packet(self.src_ip, self.target, port)
-        s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
-        s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
-        s.sendto(packet.raw, (self.target, 0))
+        import ctypes
+        print(port)
+        packet = IPHeader()
+        ip_header, payload = create_ip_packet(dest_ip=self.target, source_ip=self.src_ip, payload=b"Hello, World")
+        s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+        # s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+        dest_addr = (self.target, port)
+        s.sendto(ctypes.string_at(ctypes.pointer(ip_header), ctypes.sizeof(ip_header)) + payload, dest_addr)
+        print("wyslalem")
         s.close()
         self.pkt_counter.increment()
-        if self.mode =="all ports" or self.mode == "range ports":
+        if self.mode == "all ports" or self.mode == "range ports":
             time.sleep(0.01)
             progress = (self.pkt_counter / 65535) * 100
             progress = format(progress, '.0f')
@@ -79,7 +92,6 @@ class Scanner:
         with self.print_lock:
             print(f'Progress: % {progress}', end='')
             print(f'\r', end='')
-
 
     def scan_thread(self):
         while not self.event.is_set():
@@ -101,7 +113,6 @@ class Scanner:
             t.start()
 
         self.q.join()
-
 
         self.open_ports.get_services()
 

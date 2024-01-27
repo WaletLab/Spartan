@@ -110,7 +110,12 @@ def app():
 
         else:
             print(color.RED + "Result for {}: no open ports founds".format(hostname) + color.END)
+            print("\nProgram end in: " + color.BOLD + f"{round(stop - timer, 2)}" + color.END + "s")
 
 
 if __name__ == "__main__":
-    app()
+    import os
+    if os.getuid() == 0:
+        app()
+    else:
+        print(color.RED + "Need to run this as root!"+color.END)
