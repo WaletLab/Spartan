@@ -1,4 +1,6 @@
 import re
+import os
+import site
 import random
 import threading
 
@@ -40,7 +42,13 @@ class Ports:
             print(port)
 
     def get_services(self):
-        with open('Spartan/lib/nmap-services', 'rt') as nmap_file:
+        try:
+            nmap_file = open('Spartan/lib/nmap-services', 'rt')
+        except:
+            site_pack = site.getsitepackages()[0]
+            path = site_pack + "/Spartan/lib/nmap-services"
+            nmap_file = open(path, 'rt')
+        if nmap_file:
             for port in sorted(self.ports):
                 regex = re.compile(r'^.+\s' + re.escape(str(port)) + r'/tcp\s.+$')
                 for line in nmap_file:
@@ -48,8 +56,19 @@ class Ports:
                         line = line.strip('\n').split()
                         self.services[port] = {'port': line[1], 'state': 'open', 'service': line[0]}
                         break
-                else:
-                    self.services[port] = {'port': line[1], 'state': 'open', 'service': line[0]}
+                    else:
+                        self.services[port] = {'port': line[1], 'state': 'open', 'service': line[0]}
+            nmap_file.close()
+        # with open('Spartan/lib/nmap-services', 'rt') as nmap_file:
+        #     for port in sorted(self.ports):
+        #         regex = re.compile(r'^.+\s' + re.escape(str(port)) + r'/tcp\s.+$')
+        #         for line in nmap_file:
+        #             if regex.search(line):
+        #                 line = line.strip('\n').split()
+        #                 self.services[port] = {'port': line[1], 'state': 'open', 'service': line[0]}
+        #                 break
+        #         else:
+        #             self.services[port] = {'port': line[1], 'state': 'open', 'service': line[0]}
 
     def show_results(self):
         return self.services
