@@ -10,7 +10,7 @@ from Spartan.lib.objects import Ports, Counter, Printer
 
 
 class Scanner:
-    def __init__(self, target, mode, range_start=None, range_end=None, port=None, threads=300):
+    def __init__(self, target, mode, range_start=None, range_end=None, port=None, threads=300 ):
         self.target = target
         self.open_ports = Ports()
         self.jobs = Ports()
