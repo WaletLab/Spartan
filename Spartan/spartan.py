@@ -72,7 +72,8 @@ def app():
             print(
                 "\n[?] " + color.YELLOW + "Warning" + color.END + " selected options may increase the scanning time [?]\n")
         timer = time.perf_counter()
-        scan = Scanner(target=hostname, mode=port_mode, port=port, range_start=range_start, range_end=range_end)
+        scan = Scanner(target=hostname, mode=port_mode, port=port, range_start=range_start, range_end=range_end,
+                       threads= args.threads if args.threads else 300)
         result = scan.start_scan()
         stop = time.perf_counter()
         print(color.GREEN + "\nResult for {}:".format(hostname) + color.END)
