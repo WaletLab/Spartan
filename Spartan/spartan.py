@@ -24,6 +24,7 @@ def app():
     parser.add_argument("--script", help="path to your script", action='append')
     parser.add_argument("--timeout", type=float, help="timeout for scanner")
     parser.add_argument("--basic", help="return only scan result", action="store_true")
+    parser.add_argument("--threads", "-t", type=int, help="Number of threads")
 
     args = parser.parse_args()
     if len(sys.argv) == 1 or args.help:
@@ -59,7 +60,7 @@ def app():
     if args.basic is False:
         tprint("CyberSpartan")
         print(color.ITALIC + "\t With great power comes great responsibility \n" + color.STOP_ITALIC)
-        print("v0.1.2 created by " + color.BOLD + "dannyx-hub\n" + color.END)
+        print("v0.1.3 created by " + color.BOLD + "dannyx-hub\n" + color.END)
         print("=" * 50)
         print(f"Spartan start checks ports on " + color.BOLD + f"{hostname}" + color.END)
         print("Date: {} ".format(datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
@@ -71,7 +72,8 @@ def app():
             print(
                 "\n[?] " + color.YELLOW + "Warning" + color.END + " selected options may increase the scanning time [?]\n")
         timer = time.perf_counter()
-        scan = Scanner(target=hostname, mode=port_mode, port=port, range_start=range_start, range_end=range_end)
+        scan = Scanner(target=hostname, mode=port_mode, port=port, range_start=range_start, range_end=range_end,
+                       threads=args.threads if args.threads else 300)
         result = scan.start_scan()
         stop = time.perf_counter()
         print(color.GREEN + "\nResult for {}:".format(hostname) + color.END)
