@@ -1,9 +1,9 @@
 import typer
 from typing import Optional, List
 from art import tprint
-from lib.helpers.helpers import color
+from Spartan.lib.helpers.helpers import color
 from tabulate import tabulate
-from lib.port_scan import Scanner
+from Spartan.lib.port_scan import Scanner
 
 app = typer.Typer()
 def banner():
