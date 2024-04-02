@@ -4,6 +4,8 @@ import ftplib
 import json
 from typing import Iterable
 
+from ..lib.helpers.bruteforce_async import check_all_entries
+
 
 class Result:
     def __init__(self, **kwargs):
@@ -13,6 +15,7 @@ class Result:
         self.anon_login = kwargs.get("anon_login", None)
         self.user = kwargs.get("user", None)
         self.password = kwargs.get("password", None)
+        self.ls = kwargs.get("ls", None)
         self.error_info = kwargs.get("error_info", None)
 
 
@@ -44,31 +47,21 @@ async def scan(addr: str, wordlist: Iterable = None) -> Result:
         anon_login = False
 
         if wordlist:
-            print("Trying credentials from list", end="")
-            i = 0
-            cred = next(wordlist, None)
-            while cred:
-                print(".", end="")
-                tasks = []
-                for j in range(0, 16):
-                    i += 1
-                    tasks.append(asyncio.create_task(check_cred(addr, cred)))
-                    cred = next(wordlist, None)
-                    if not cred:
-                        break
-
-                task_ret = await asyncio.wait(fs={*tasks}, return_when=asyncio.ALL_COMPLETED)
-                valid_cred = [x for x in task_ret if x]
-                if valid_cred:
-                    user, password = valid_cred[0]
-                    break
-            print("")
+            print("Trying credentials from list")
+            valid_cred = await check_all_entries(check_cred, addr, wordlist)
+            if valid_cred:
+                user, password = valid_cred[0]
+            print("Found valid credentials:", user+":"+password)
 
         if not user:
             return Result(addr=addr, status="unauthorized", banner=banner, anon_login=False)
 
+    ls = []
+    ftp.dir(ls.append)
+    ls = "\n".join(ls)
+
     return Result(addr=addr, status="ok", banner=banner, anon_login=anon_login,
-                  user=user, password=password)
+                  user=user, password=password, ls=ls)
 
 
 async def main():
