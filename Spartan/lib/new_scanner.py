@@ -85,12 +85,13 @@ class Scanner:
 
     def udp_scan_port(self, port: int):
         pkt = IP(dst=self._host)/UDP(sport=RandShort(), dport=port)/Raw(b"a")
-        sent, recvd = sr(pkt, retry=self._udp_retries, timeout=self._timeout, multi=True, verbose=False)
+        recvd, unanswered = sr(pkt, retry=self._udp_retries, timeout=self._timeout, multi=True, verbose=False)
         if not recvd:
             return PortResult(port, PortStatus.OPEN_OR_FILTERED, detail=StatusDetail.NO_RESP)
         else:
-            for pkt in recvd:
-                pkt: Packet = pkt
+            for query_answer in recvd:
+                pkt: Packet = query_answer.answer
+                print(pkt)
                 if pkt.haslayer(UDP):
                     return PortResult(port, PortStatus.OPEN, detail=StatusDetail.UDP)
                 elif pkt.haslayer(ICMP):
