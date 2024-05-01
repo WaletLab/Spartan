@@ -1,5 +1,4 @@
-setuptools==69.1.1
-art==6.0
-tqdm==4.65.0
+art==6.2
+-e git+https://github.com/WaletLab/Spartan@5fe1b25d0cbca75ed8e62d5d3a26993070dd07d1#egg=cyberspartan
+scapy==2.5.0
 tabulate==0.9.0
-requests==2.31.0
