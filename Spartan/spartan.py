@@ -1,13 +1,13 @@
 import typer
-from rich.progress import track
 import time
 import datetime
 from art import tprint
 # from lib.helpers import helpers
-from lib.helpers.helpers import MessageType, print_banner, port_mode_parser, params_table
+from lib.helpers.helpers import MessageType, print_banner, print_scanner_options
 
 app = typer.Typer()
 msg = MessageType()
+state = {"basic": False}
 # TODO mody do skanowania dajemy w command
 
 
@@ -15,14 +15,14 @@ msg = MessageType()
 def single_port(host: str = typer.Option(help="target IP"),
                 port: str = typer.Option(
                     help="just fucking port why need more"),
-                retry_timeout: int = typer.Option(default=1, help="retry timeout")):
+                retry_timeout: int = typer.Option(
+                    default=1, help="retry timeout"),
+                ):
+    if state['basic'] is False:
+        print_scanner_options(datetime.datetime.today().strftime(
+            "%Y-%m-%d %H:%M"), "TCP SYN Scan", host, port, retry_timeout)
 
     msg.info("TCP SYN scan stared!")
-    total = 0
-    for value in track(range(100), description="Processing..."):
-        # Fake processing time
-        time.sleep(0.01)
-        total += 1
     msg.success("Done!")
     msg.success(f"Results for {host}:")
 
@@ -32,6 +32,12 @@ def all_ports(host: str = typer.Option(help="target IP")):
     msg.info("all")
 
 
+@app.callback()
+def banner(basic: bool = False):
+    if basic is False:
+        print_banner()
+    state["basic"] = basic
+
+
 if __name__ == "__main__":
-    print_banner()
     app()
