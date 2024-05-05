@@ -12,24 +12,34 @@ state = {"basic": False}
 
 
 @app.command(name="tcp", help="TCP SYN scan")
-def single_port(host: str = typer.Option(help="target IP"),
-                port: str = typer.Option(
-                    help="just fucking port why need more"),
-                retry_timeout: int = typer.Option(
-                    default=1, help="retry timeout"),
-                ):
+def tcp_syn_scan(host: str = typer.Option(help="target IP"),
+                 port: str = typer.Option(
+    help="just fucking port why need more"),
+    retry_timeout: int = typer.Option(
+    default=1, help="retry timeout"),
+):
     if state['basic'] is False:
         print_scanner_options(datetime.datetime.today().strftime(
             "%Y-%m-%d %H:%M"), "TCP SYN Scan", host, port, retry_timeout)
 
     msg.info("TCP SYN scan stared!")
+    # TODO tutaj puszczamy skan
     msg.success("Done!")
     msg.success(f"Results for {host}:")
 
 
-@app.command(name="all_ports", help="scanning all TCP ports.")
-def all_ports(host: str = typer.Option(help="target IP")):
-    msg.info("all")
+@app.command(name="udp", help="UDP scan")
+def udp_scan(host: str = typer.Option(help="target IP"),
+             port: str = typer.Option(help="just fucking port why need more"),
+             retry_timeout: int = typer.Option(default=1, help="retry timeout")
+             ):
+    if state["basic"] is False:
+        print_scanner_options(datetime.datetime.today().strftime(
+            "%Y-%m-%d %H:%M"), "UDP scan", host, port, retry_timeout)
+    msg.info("UDP scan started!")
+    # TODO tutaj puszczamy skan
+    msg.success("Done!")
+    msg.success(f"Results for {host}:")
 
 
 @app.callback()
