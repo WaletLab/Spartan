@@ -1,5 +1,9 @@
-from rich import print as rprint, table
+from rich import print as rprint
+from rich.table import Table
+from rich import box
 from art import tprint
+import datetime
+import csv
 
 
 class Port:
@@ -41,14 +45,48 @@ def print_banner():
 
 
 def print_scanner_options(date, mode, host, port, retry_timeout):
+    if port == "d":
+        port = "default"
+    elif port == "a":
+        port = "al  l ports"
     rprint("\n[bold blue]Scanner Options: [/bold blue]")
     print(
         f"Date: {date}\nHost:  {host}\nMode:  {mode}\nPort:  {port}\nRetry timeout:  {retry_timeout}\n")
 
 
 def port_mode_parser(port):
-    if port.find(":") != -1:
-        port_range = port.split(":")
-        return [x for x in range(int(port_range[0]), int(port_range[1])+1)]
+    from lib.new_scanner import all_ports
+    if port == "d":
+        return Port.top_ports
+    elif port == "a":
+        return all_ports()
     else:
-        return port
+        if port.find(":") != -1:
+            port_range = port.split(":")
+            return [x for x in range(int(port_range[0]), int(port_range[1])+1)]
+        else:
+            return [int(port)]
+
+
+def format_status(status):
+    if status == "OPEN":
+        return f"[green]{status}[/green]"
+    elif status == "FILTERED":
+        return f"[yellow]{status}[/yellow]"
+
+
+def return_table_result(result):
+    tb = Table(box=box.SIMPLE)
+    tb.add_column("PORT")
+    tb.add_column("STATUS")
+    tb.add_column("DETAILS")
+    for x in result:
+        tb.add_row(str(x.port), format_status(x.status), x.detail)
+    rprint(tb)
+
+def return_result_to_file(host, result):
+    outfile_name = f"{host}_output"
+    with open(f"{outfile_name}.csv", "w", newline="") as outfile:
+        writer = csv.writer(outfile, delimiter=';')
+        writer.writerow(["PORT", "STATUS", "DETAILS"])
+        writer.writerows([x.port, x.status, x.detail] for x in result)
