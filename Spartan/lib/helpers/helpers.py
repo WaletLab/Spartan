@@ -84,9 +84,21 @@ def return_table_result(result):
         tb.add_row(str(x.port), format_status(x.status), x.detail)
     rprint(tb)
 
+
 def return_result_to_file(host, result):
     outfile_name = f"{host}_output"
     with open(f"{outfile_name}.csv", "w", newline="") as outfile:
         writer = csv.writer(outfile, delimiter=';')
         writer.writerow(["PORT", "STATUS", "DETAILS"])
         writer.writerows([x.port, x.status, x.detail] for x in result)
+
+
+def return_script_result(path, result, host):
+    from lib.new_script import ScriptExec
+    import os
+    name = path.split("/")[-1]
+    s = ScriptExec(name=name, host=host, result=result,
+                   path=os.path.dirname(path))
+    rprint(s.run_exec())
+
+def return_script_list():

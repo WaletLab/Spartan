@@ -36,5 +36,5 @@ if __name__ == "__main__":
     host = "45.33.32.156"
     result = {}
     s = ScriptExec("test.py", host, result,
-                   path="/Users/dannyx/PycharmProjects/Spartan/Spartan/scripts")
+                   )
     s.run_exec()

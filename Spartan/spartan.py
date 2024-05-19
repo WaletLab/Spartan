@@ -3,7 +3,7 @@ import time
 import datetime
 from art import tprint
 from lib.new_scanner import Scanner, ScanType, PortStatus
-from lib.helpers.helpers import MessageType, print_banner, print_scanner_options, port_mode_parser, return_table_result, return_result_to_file
+from lib.helpers.helpers import MessageType, print_banner, print_scanner_options, port_mode_parser, return_table_result, return_result_to_file, return_script_result
 
 app = typer.Typer()
 msg = MessageType()
@@ -11,6 +11,9 @@ state = {"basic": False}
 # TODO mody do skanowania dajemy w command
 # TODO
 
+@app.command(name="scripts", help="List of avalible default scripts")
+def script_lst():
+    return return_script_list
 
 @app.command(name="tcp", help="TCP SYN scan")
 def tcp_syn_scan(host: str = typer.Option(help="target IP"),
@@ -18,7 +21,8 @@ def tcp_syn_scan(host: str = typer.Option(help="target IP"),
     default="d", help="just fucking port why need more"),
     retry_timeout: int = typer.Option(
     default=1, help="retry timeout"),
-    output: bool = typer.Option(False, help="Save output to file")
+    output: bool = typer.Option(False, help="Save output to file"),
+    script: str = typer.Option("", help="Path to script, default scripts ")
 ):
     sc = Scanner(host, pool_size=128)
     if state['basic'] is False:
