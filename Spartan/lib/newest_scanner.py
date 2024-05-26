@@ -95,7 +95,8 @@ class Scanner:
         if not self._pkt_handler_proper:
             raise RuntimeError("Something's wrong with packet handling. Investigate.")
         result = self._pkt_handler_proper(pkt)
-        self._results[result.port] = result
+        if result:
+            self._results[result.port] = result
 
     async def scan(self, method: str, ports: Iterable) -> dict[int, PortResult]:
         if not self._sock:
@@ -225,7 +226,7 @@ class Scanner:
 
 async def main():
     with Scanner("45.33.32.156", pool_size=256, rtt_timeout=3) as scn:
-        result = await scn.scan(ScanType.UDP, top_ports_shuffled())
+        result = await scn.scan(ScanType.TCP_SYN, top_ports_shuffled())
     result = [x for x in result.values() if x.status != PortStatus.CLOSED]
     for x in result:
         print(x.port, x.status, x.detail)
