@@ -51,7 +51,7 @@ def print_scanner_options(date, mode, host, port, retry_timeout):
         port = "al  l ports"
     rprint("\n[bold blue]Scanner Options: [/bold blue]")
     print(
-        f"Date: {date}\nHost:  {host}\nMode:  {mode}\nPort:  {port}\nRetry timeout:  {retry_timeout}\n")
+        f"Date: {date}\nHost:  {host}\nMode:  {mode}\nPort:  {port}\nFilter:  {filter}\nRetry timeout:  {retry_timeout}\n")
 
 
 def port_mode_parser(port):

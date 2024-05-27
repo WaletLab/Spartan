@@ -36,16 +36,16 @@ async def tcp_syn_scan(host: str = typer.Option(help="target IP"),
     filter: str = typer.Option(default="open", help="Filter to result. Default - open. Filters avalible: open, closed, "
                                                     "filtered, closed_or_open, awaiting ")
 ):
-    with Scanner(host=host, pool_size=256, rtt_timeout=retry_timeout) as scn:
-        msg.info("TCP SYN scan stared!")
-        result = await scn.scan(method=ScanType.TCP_SYN, ports=port_mode_parser(port))
     if state['basic'] is False:
         print_scanner_options(datetime.datetime.today().strftime(
-            "%Y-%m-%d %H:%M"), "TCP SYN Scan", host, port, retry_timeout)
+            "%Y-%m-%d %H:%M"), "TCP SYN Scan", host, port,filter, retry_timeout)
     filter = get_filter_value(filter)
     if filter is False:
         msg.error("Wrong filter! Return to default")
         filter = PortStatus.OPEN
+    with Scanner(host=host, pool_size=256, rtt_timeout=retry_timeout) as scn:
+        msg.info("TCP SYN scan stared!")
+        result = await scn.scan(method=ScanType.TCP_SYN, ports=port_mode_parser(port))
     result = [x for x in result.values() if x.status == filter]
     msg.success("Done!")
     if len(result) != 0:
