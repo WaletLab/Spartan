@@ -73,6 +73,8 @@ def format_status(status):
         return f"[green]{status}[/green]"
     elif status == "FILTERED":
         return f"[yellow]{status}[/yellow]"
+    else:
+        return status
 
 
 def return_table_result(result):
