@@ -1,10 +1,9 @@
 import socket
-
+# todo to jest jakies zjabane
 
 def get_mysql_info(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        print("tu")
         sock.connect((host, port))
         sock.sendall(b"\x05\x00\x00\x00\x0a")
         data = sock.recv(1024)

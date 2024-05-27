@@ -99,6 +99,20 @@ def return_script_result(path, result, host):
     name = path.split("/")[-1]
     s = ScriptExec(name=name, host=host, result=result,
                    path=os.path.dirname(path))
-    rprint(s.run_exec())
+    rprint(f"[blue bold]\nScript {name} result:[/blue bold]")
+    s.run_exec()
 
+
+def list_script_from_default(path):
+    import os
+    scripts = []
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".py"):
+                scripts.append(file)
+    return scripts
 def return_script_list():
+    script_list = list_script_from_default("./scripts")
+    rprint("Default script list: ")
+    for script in script_list:
+        rprint(script)

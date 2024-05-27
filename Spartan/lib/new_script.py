@@ -1,6 +1,7 @@
 
 import os
-import importlib
+import importlib.util
+
 
 
 class ScriptExec:
@@ -8,14 +9,13 @@ class ScriptExec:
         self.globals = {"host": host, "result": result}
         self.path = path
         self.name = name
-
     def find_script_file(self):
         try:
             if self.path:
                 script_path = f"{self.path}/{self.name}"
             else:
                 script_path = os.path.join(
-                    os.path.dirname(__file__), "scripts", self.name)
+                    os.path.dirname(os.path.dirname(__file__)), "scripts", self.name)
 
             spec = importlib.util.spec_from_file_location(
                 self.name, script_path)
@@ -35,6 +35,6 @@ class ScriptExec:
 if __name__ == "__main__":
     host = "45.33.32.156"
     result = {}
-    s = ScriptExec("test.py", host, result,
+    s = ScriptExec( path="/Users/dannyx/PycharmProjects/Spartan/Spartan/scripts", name="test.py", host=host, result=result,
                    )
     s.run_exec()
