@@ -18,6 +18,8 @@ class ScanType:
     TCP_FIN = "TCP_FIN"
     TCP_NULL = "TCP_NULL"
     TCP_XMAS = "TCP_XMAS"
+    # TODO
+    # TCP_CON = "TCP_CON"
     UDP = "UDP"
 
 
@@ -111,17 +113,19 @@ class Scanner:
 
         match method:
             case ScanType.TCP_SYN:
-                init_sniffer(self._tcp_syn_pkt_handler, "tcp and host %s" % self._host)
+                init_sniffer(self._tcp_syn_pkt_handler, "(tcp or icmp) and src host %s" % self._host)
                 self.tcp_syn_scan(ports)
             case ScanType.TCP_FIN:
-                init_sniffer(self._tcp_pkt_handler, "tcp and host %s" % self._host)
+                init_sniffer(self._tcp_pkt_handler, "(tcp or icmp) and src host %s" % self._host)
                 self.tcp_scan(ports, "F")
             case ScanType.TCP_NULL:
-                init_sniffer(self._tcp_pkt_handler, "tcp and host %s" % self._host)
+                init_sniffer(self._tcp_pkt_handler, "(tcp or icmp) and src host %s" % self._host)
                 self.tcp_scan(ports, "")
             case ScanType.TCP_XMAS:
-                init_sniffer(self._tcp_pkt_handler, "tcp and host %s" % self._host)
+                init_sniffer(self._tcp_pkt_handler, "(tcp or icmp) and src host %s" % self._host)
                 self.tcp_scan(ports, "FPU")
+            # TODO
+            # case ScanType.TCP_CON:
             case ScanType.UDP:
                 init_sniffer(self._udp_pkt_handler, "(udp or icmp) and src host %s" % self._host)
                 self.udp_scan(ports)
@@ -143,12 +147,20 @@ class Scanner:
                 self._send(result.probe_pkt)
                 result.retries += 1
                 result.probed_at = datetime.now()
-                # TODO
-                # if self._time_between_retries_ms:
-                #   await asyncio.sleep(self._time_between_retries_ms)
+                if self._time_between_retries_ms:
+                  await asyncio.sleep(self._time_between_retries_ms)
             await asyncio.sleep(0.5)
         self._pkt_handler_proper = None
-        real_results = {k: v for k, v in self._results.items() if v.status != PortStatus.AWAITING}
+        match method:
+            case ScanType.TCP_SYN:
+                real_results = {k: PortResult(v.port, PortStatus.FILTERED, v.detail) if v.status == PortStatus.AWAITING else v
+                                for k, v in self._results.items()}
+            case ScanType.TCP_FIN | ScanType.TCP_XMAS | ScanType.TCP_NULL | ScanType.UDP:
+                real_results = {k: PortResult(v.port, PortStatus.OPEN_OR_FILTERED, v.detail) if v.status == PortStatus.AWAITING else v
+                                for k, v in self._results.items()}
+            case _:
+                real_results = {k: v for k, v in self._results.items() if v.status != PortStatus.AWAITING}
+
         return real_results
 
     def _run_async_midfast(self, fn, args_list: Iterable[Tuple | Any], flags: str | None):
@@ -197,22 +209,27 @@ class Scanner:
         if pkt.haslayer(TCP) and pkt[TCP].flags.R:  # RST
             return PortResult(port, PortStatus.CLOSED, detail=StatusDetail.TCP)
         elif pkt.haslayer(ICMP):
-            return PortResult(port, PortStatus.FILTERED, detail=StatusDetail.ICMP)
+            if pkt[ICMP].type == 3 and pkt[ICMP].code in [1, 2, 3, 9, 10, 13]:
+                return PortResult(port, PortStatus.FILTERED, detail=StatusDetail.ICMP)
 
     def _tcp_pkt_handler(self, pkt: Packet):
         port = pkt[TCP].sport
         if pkt.haslayer(TCP) and pkt[TCP].flags.R:  # RST
             return PortResult(port, PortStatus.CLOSED, detail=StatusDetail.TCP)
         elif pkt.haslayer(ICMP):
-            return PortResult(port, PortStatus.FILTERED, detail=StatusDetail.ICMP)
+            if pkt[ICMP].type == 3 and pkt[ICMP].code in [1, 2, 3, 9, 10, 13]:
+                return PortResult(port, PortStatus.FILTERED, detail=StatusDetail.ICMP)
 
     def _udp_pkt_handler(self, pkt: Packet):
-        print(pkt)
         port = pkt[IP].sport
         if pkt.haslayer(UDP):
             return PortResult(port, PortStatus.OPEN, detail=StatusDetail.UDP)
         elif pkt.haslayer(ICMP):
-            return PortResult(port, PortStatus.OPEN_OR_FILTERED, detail=StatusDetail.ICMP)
+            if pkt[ICMP].type == 3:
+                if pkt[ICMP].code == 3:
+                    return PortResult(port, PortStatus.CLOSED, detail=StatusDetail.ICMP)
+                elif pkt[ICMP].code in [1, 2, 9, 10, 13]:
+                    return PortResult(port, PortStatus.FILTERED, detail=StatusDetail.ICMP)
 
     def tcp_syn_scan(self, ports: Iterable):
         self._run_async_midfast(self.tcp_syn_scan_port, ports, "S")
@@ -226,11 +243,10 @@ class Scanner:
 
 async def main():
     with Scanner("45.33.32.156", pool_size=256, rtt_timeout=3) as scn:
-        result = await scn.scan(ScanType.TCP_SYN, top_ports_shuffled())
+        result = await scn.scan(ScanType.UDP, top_ports_shuffled())
     result = [x for x in result.values() if x.status != PortStatus.CLOSED]
     for x in result:
-        print(x.port, x.status, x.detail)
-    print(len(result))
+            print(x.port, x.status, x.detail)
 
 
 if __name__ == "__main__":
