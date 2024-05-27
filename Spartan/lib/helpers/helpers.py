@@ -116,3 +116,15 @@ def return_script_list():
     rprint("Default script list: ")
     for script in script_list:
         rprint(script)
+
+def get_filter_value(filter):
+    from lib.newest_scanner import PortStatus
+    filters = {"open":PortStatus.OPEN,
+               "closed":PortStatus.CLOSED,
+               "filtered":PortStatus.FILTERED,
+               "open_or_filtered":PortStatus.OPEN_OR_FILTERED,
+               "awating":PortStatus.AWAITING}
+    try:
+        return filters[filter]
+    except KeyError:
+        return False
