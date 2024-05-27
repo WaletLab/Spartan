@@ -44,7 +44,7 @@ def print_banner():
     rprint("[italic]created by WaletLab[/italic]\n")
 
 
-def print_scanner_options(date, mode, host, port, retry_timeout):
+def print_scanner_options(date, mode, host, port, filter, retry_timeout):
     if port == "d":
         port = "default"
     elif port == "a":
