@@ -3,6 +3,7 @@ import asyncio
 import sys
 import typer
 import datetime
+from functools import wraps
 from lib.newest_scanner import Scanner, ScanType, PortStatus
 from lib.helpers.helpers import (MessageType, print_banner, print_scanner_options, port_mode_parser, return_table_result,
                                  return_result_to_file, return_script_result, return_script_list, get_filter_value)
@@ -13,11 +14,18 @@ state = {"basic": False}
 # TODO mody do skanowania dajemy w command
 # TODO filtry po PortStatus
 
+
+def coro(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        return asyncio.run(f(*args, **kwargs))
+    return wrapper
 @app.command(name="scripts", help="List of avalible default scripts")
 def script_lst():
     return_script_list()
 
 @app.command(name="tcp", help="TCP SYN scan")
+@coro
 async def tcp_syn_scan(host: str = typer.Option(help="target IP"),
                  port: str = typer.Option(
     default="d", help="just fucking port why need more"),
