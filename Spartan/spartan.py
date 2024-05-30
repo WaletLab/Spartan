@@ -16,6 +16,9 @@ async def execute_scan(type,host,port,retry_timeout,output,script,filter):
     scan_type = {
         "TCP SYN": ScanType.TCP_SYN,
         "UDP": ScanType.UDP,
+        "TCP FIN": ScanType.TCP_FIN,
+        "TCP NULL": ScanType.TCP_NULL,
+        "TCP XMAS": ScanType.TCP_XMAS
     }
     if state['basic'] is False:
         print_scanner_options(datetime.datetime.today().strftime(
@@ -70,6 +73,42 @@ async def tcp_syn_scan(
     filter: str = typer.Option(default="open", help=HelpMsg.filter)
 ):
     await execute_scan("TCP SYN", host, port, retry_timeout, output, script, filter)
+
+@app.command(name="fin", help="TCP FIN scan")
+@coro
+async def tcp_fin_scan(
+    host: str = typer.Option(default="", help=HelpMsg.host),
+    port: str = typer.Option(default="d", help=HelpMsg.port),
+    retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
+    output: bool = typer.Option(default=False, help=HelpMsg.output),
+    script: str = typer.Option(default=None, help=HelpMsg.script),
+    filter: str = typer.Option(default="open", help=HelpMsg.filter)
+):
+    await execute_scan("TCP FIN", host, port, retry_timeout, output, script, filter)
+
+@app.command(name="null", help="TCP NULL scan")
+@coro
+async def tcp_null_scan(
+    host: str = typer.Option(default="", help=HelpMsg.host),
+    port: str = typer.Option(default="d", help=HelpMsg.port),
+    retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
+    output: bool = typer.Option(default=False, help=HelpMsg.output),
+    script: str = typer.Option(default=None, help=HelpMsg.script),
+    filter: str = typer.Option(default="open", help=HelpMsg.filter)
+):
+    await execute_scan("TCP NULL", host, port, retry_timeout, output, script, filter)
+
+@app.command(name="XMAS", help="TCP XMAS scan")
+@coro
+async def tcp_xmas_scan(
+    host: str = typer.Option(default="", help=HelpMsg.host),
+    port: str = typer.Option(default="d", help=HelpMsg.port),
+    retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
+    output: bool = typer.Option(default=False, help=HelpMsg.output),
+    script: str = typer.Option(default=None, help=HelpMsg.script),
+    filter: str = typer.Option(default="open", help=HelpMsg.filter)
+):
+    await execute_scan("TCP XMAS", host, port, retry_timeout, output, script, filter)
 
 @app.callback()
 def banner(basic: bool = False):
