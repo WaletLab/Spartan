@@ -50,7 +50,7 @@ def coro(f):
 def script_lst():
     return_script_list()
 
-@app.command(name="udp")
+@app.command(name="udp", help="UDP Scan")
 @coro
 async def udp_scan(
     host: str = typer.Option(default="", help=HelpMsg.host),
@@ -62,7 +62,7 @@ async def udp_scan(
 ):
     await execute_scan("UDP", host, port, retry_timeout, output, script, filter)
 
-@app.command(name="syn")
+@app.command(name="syn", help="TCP XMAS scan")
 @coro
 async def tcp_syn_scan(
     host: str = typer.Option(default="", help=HelpMsg.host),
