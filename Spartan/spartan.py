@@ -6,7 +6,7 @@ import datetime
 from functools import wraps
 from lib.newest_scanner import Scanner, ScanType, PortStatus
 from lib.helpers.helpers import (MessageType, print_banner, print_scanner_options, port_mode_parser, return_table_result,
-                                 return_result_to_file, return_script_result, return_script_list, get_filter_value)
+                                 return_result_to_file, return_script_result, return_script_list, get_filter_value, HelpMsg)
 
 app = typer.Typer()
 msg = MessageType()
@@ -24,17 +24,47 @@ def coro(f):
 def script_lst():
     return_script_list()
 
-@app.command(name="tcp", help="TCP SYN scan")
+@app.command(name="udp")
 @coro
-async def tcp_syn_scan(host: str = typer.Option(help="target IP"),
-                 port: str = typer.Option(
-    default="d", help="just fucking port why need more"),
-    retry_timeout: int = typer.Option(
-    default=1, help="retry timeout"),
-    output: bool = typer.Option(False, help="Save output to file"),
-    script: str = typer.Option(None, help="Path to script, default scripts "),
-    filter: str = typer.Option(default="open", help="Filter to result. Default - open. Filters avalible: open, closed, "
-                                                    "filtered, closed_or_open, awaiting ")
+async def udp_scan(
+    host: str = typer.Option(default="", help=HelpMsg.host),
+    port: str = typer.Option(default="d", help=HelpMsg.port),
+    retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
+    output: bool = typer.Option(default=False, help=HelpMsg.output),
+    script: str = typer.Option(default=None, help=HelpMsg.script),
+    filter: str = typer.Option(default="open", help=HelpMsg.filter)
+):
+    if state['basic'] is False:
+        print_scanner_options(datetime.datetime.today().strftime(
+            "%Y-%m-%d %H:%M"), "UDP Scan", host, port, filter, retry_timeout)
+        filter = get_filter_value(filter)
+        if filter is False:
+            msg.error("Wrong filter! Return to default")
+            filter = PortStatus.OPEN
+    with Scanner(host=host, pool_size=256, rtt_timeout=retry_timeout) as scn:
+        msg.info("TCP SYN scan stared!")
+        result = await scn.scan(method=ScanType.UDP, ports=port_mode_parser(port))
+    result = [x for x in result.values() if x.status == filter]
+    msg.success("Done!")
+    if len(result) != 0:
+        msg.success(f"Results for {host}: \n")
+        return_table_result(result)
+    else:
+        msg.warning("No open ports found!")
+    if output:
+        return_result_to_file(host, result)
+    if script:
+        return_script_result(script, result, host)
+
+@app.command(name="syn")
+@coro
+async def tcp_syn_scan(
+    host: str = typer.Option(default="", help=HelpMsg.host),
+    port: str = typer.Option(default="d", help=HelpMsg.port),
+    retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
+    output: bool = typer.Option(default=False, help=HelpMsg.output),
+    script: str = typer.Option(default=None, help=HelpMsg.script),
+    filter: str = typer.Option(default="open", help=HelpMsg.filter)
 ):
     if state['basic'] is False:
         print_scanner_options(datetime.datetime.today().strftime(
@@ -57,20 +87,6 @@ async def tcp_syn_scan(host: str = typer.Option(help="target IP"),
         return_result_to_file(host, result)
     if script:
         return_script_result(script, result, host)
-
-@app.command(name="udp", help="UDP scan")
-def udp_scan(host: str = typer.Option(help="target IP"),
-             port: str = typer.Option(help="just fucking port why need more"),
-             retry_timeout: int = typer.Option(default=1, help="retry timeout")
-             ):
-    if state["basic"] is False:
-        print_scanner_options(datetime.datetime.today().strftime(
-            "%Y-%m-%d %H:%M"), "UDP scan", host, port, retry_timeout)
-    msg.info("UDP scan started!")
-    # TODO tutaj puszczamy skan
-    msg.success("Done!")
-    msg.success(f"Results for {host}:")
-
 
 @app.callback()
 def banner(basic: bool = False):
