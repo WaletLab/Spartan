@@ -2,6 +2,7 @@ import os
 import asyncio
 import sys
 import typer
+import time
 import datetime
 from functools import wraps
 from lib.newest_scanner import Scanner, ScanType, PortStatus
@@ -27,11 +28,14 @@ async def execute_scan(type,host,port,retry_timeout,output,script,filter):
         if filter is False:
             msg.error("Wrong filter! Return to default")
             filter = PortStatus.OPEN
+    start = time.perf_counter()
     with Scanner(host=host, pool_size=256, rtt_timeout=retry_timeout) as scn:
         msg.info(f"{type} scan stared!")
         result = await scn.scan(method=scan_type[type], ports=port_mode_parser(port))
     result = [x for x in result.values() if x.status == filter]
+    stop = time.perf_counter()
     msg.success("Done!")
+    msg.info(f"Time: {stop-start}")
     if len(result) != 0:
         msg.success(f"Results for {host}: \n")
         return_table_result(result)
@@ -98,7 +102,7 @@ async def tcp_null_scan(
 ):
     await execute_scan("TCP NULL", host, port, retry_timeout, output, script, filter)
 
-@app.command(name="XMAS", help="TCP XMAS scan")
+@app.command(name="xmas", help="TCP XMAS scan")
 @coro
 async def tcp_xmas_scan(
     host: str = typer.Option(default="", help=HelpMsg.host),
