@@ -134,8 +134,8 @@ def get_filter_value(filter):
     filters = {"open":PortStatus.OPEN,
                "closed":PortStatus.CLOSED,
                "filtered":PortStatus.FILTERED,
-               "open_or_filtered":PortStatus.OPEN_OR_FILTERED,
-               "awating":PortStatus.AWAITING}
+               "open_or_filtered":PortStatus.OPEN_OR_FILTERED
+               }
     try:
         return filters[filter]
     except KeyError:
