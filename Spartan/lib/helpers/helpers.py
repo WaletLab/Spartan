@@ -65,7 +65,7 @@ def print_scanner_options(date, mode, host, port, filter, retry_timeout):
 
 
 def port_mode_parser(port):
-    from lib.new_scanner import all_ports
+    from lib.scanner import all_ports
     if port == "d":
         return Port.top_ports
     elif port == "a":
