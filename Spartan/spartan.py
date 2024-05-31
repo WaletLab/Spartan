@@ -5,7 +5,7 @@ import typer
 import time
 import datetime
 from functools import wraps
-from lib.newest_scanner import Scanner, ScanType, PortStatus
+from lib.scanner import Scanner, ScanType, PortStatus
 from lib.helpers.helpers import (MessageType, print_banner, print_scanner_options, port_mode_parser, return_table_result,
                                  return_result_to_file, return_script_result, return_script_list, get_filter_value, HelpMsg)
 
