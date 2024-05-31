@@ -4,6 +4,7 @@ import asyncio
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 from typing import Tuple, Any, Iterable, Callable
+from copy import copy
 
 from scapy.layers.inet import IP, UDP, TCP, ICMP
 from scapy.all import Raw, RandShort, Packet, AsyncSniffer
@@ -28,7 +29,6 @@ class PortStatus:
     OPEN = "OPEN"
     FILTERED = "FILTERED"
     OPEN_OR_FILTERED = "OPEN OR FILTERED"
-    AWAITING = "AWAITING"
 
 
 class StatusDetail:
@@ -37,11 +37,6 @@ class StatusDetail:
     TCP = "TCP"
     UDP = "UDP"
     ICMP = "ICMP"
-
-
-class PortList:
-    ALL = "ALL"
-    TOP = "TOP"
 
 
 def top_ports_shuffled() -> list[int]:
@@ -65,6 +60,12 @@ class PortResult:
         self.probed_at = probed_at
         self.retries = retries
 
+    def to_updated(self, **kwargs):
+        updated = copy(self)
+        for k, v in kwargs:
+            setattr(updated, k, v)
+        return updated
+
 
 class Scanner:
     def __init__(self,
@@ -77,13 +78,13 @@ class Scanner:
         self._host = host
         self._retries = max_retries
         self._rtt_timeout = rtt_timeout
-        # TODO
         self._time_between_packets_ms = time_between_packets_ms
         self._time_between_retries_ms = time_between_retries_ms
         self._pool_size = pool_size
         self._sock: L3RawSocket | None = None
         self._sniffer: AsyncSniffer | None = None
         self._pkt_handler_proper: Callable[[Packet], PortResult] | None = None
+        self._last_pkt_sent_at: int = time.time()
         self._results: dict[int, PortResult] = {}
 
     def __enter__(self):
@@ -135,8 +136,10 @@ class Scanner:
         anything_left = True
         while anything_left:
             anything_left = False
-            for result in self._results.values():
-                if result.status != PortStatus.AWAITING:
+            cur_keys = self._results.copy()
+            for key in cur_keys:
+                result = self._results[key]
+                if result.detail != StatusDetail.NO_RESP:
                     continue
                 if result.retries > self._retries:
                     continue
@@ -148,20 +151,10 @@ class Scanner:
                 result.retries += 1
                 result.probed_at = datetime.now()
                 if self._time_between_retries_ms:
-                  await asyncio.sleep(self._time_between_retries_ms)
+                  await asyncio.sleep(self._time_between_retries_ms / 1000)
             await asyncio.sleep(0.5)
         self._pkt_handler_proper = None
-        match method:
-            case ScanType.TCP_SYN:
-                real_results = {k: PortResult(v.port, PortStatus.FILTERED, v.detail) if v.status == PortStatus.AWAITING else v
-                                for k, v in self._results.items()}
-            case ScanType.TCP_FIN | ScanType.TCP_XMAS | ScanType.TCP_NULL | ScanType.UDP:
-                real_results = {k: PortResult(v.port, PortStatus.OPEN_OR_FILTERED, v.detail) if v.status == PortStatus.AWAITING else v
-                                for k, v in self._results.items()}
-            case _:
-                real_results = {k: v for k, v in self._results.items() if v.status != PortStatus.AWAITING}
-
-        return real_results
+        return self._results
 
     def _run_async_midfast(self, fn, args_list: Iterable[Tuple | Any], flags: str | None):
         with ThreadPoolExecutor(max_workers=self._pool_size) as pool:
@@ -176,27 +169,33 @@ class Scanner:
             return results
 
     def _send(self, packet: Packet):
+        if self._time_between_packets_ms:
+            time_since_last_packet = time.time() - self._last_pkt_sent_at
+            time_to_sleep = self._time_between_packets_ms / 1000 - time_since_last_packet
+            if time_to_sleep > 0:
+                self._last_pkt_sent_at = time.time() + time_to_sleep
+                time.sleep(time_to_sleep)
         self._sock.send(packet)
 
     def tcp_syn_scan_port(self, port: int, flags: str):
         sport = RandShort()
         pkt = IP(dst=self._host) / TCP(sport=sport, dport=port, flags=flags) / Raw(b"")
-        self._send(pkt)
-        self._results[port] = PortResult(port, PortStatus.AWAITING, StatusDetail.NONE,
+        self._results[port] = PortResult(port, PortStatus.FILTERED, StatusDetail.NO_RESP,
                                          pkt, datetime.now())
+        self._send(pkt)
 
     def tcp_various_flags_scan_port(self, port: int, flags: str):
         sport = RandShort()
         pkt = IP(dst=self._host) / TCP(sport=sport, dport=port, flags=flags) / Raw(b"")
-        self._send(pkt)
-        self._results[port] = PortResult(port, PortStatus.AWAITING, StatusDetail.NONE,
+        self._results[port] = PortResult(port, PortStatus.OPEN_OR_FILTERED, StatusDetail.NO_RESP,
                                          pkt, datetime.now())
+        self._send(pkt)
 
     def udp_scan_port(self, port: int):
         pkt = IP(dst=self._host) / UDP(sport=RandShort(), dport=port) / Raw(b"")
-        self._send(pkt)
-        self._results[port] = PortResult(port, PortStatus.AWAITING, StatusDetail.NONE,
+        self._results[port] = PortResult(port, PortStatus.OPEN_OR_FILTERED, StatusDetail.NO_RESP,
                                          pkt, datetime.now())
+        self._send(pkt)
 
     def _tcp_syn_pkt_handler(self, pkt: Packet):
         port = pkt[TCP].sport
@@ -242,8 +241,8 @@ class Scanner:
 
 
 async def main():
-    with Scanner("45.33.32.156", pool_size=256, rtt_timeout=3) as scn:
-        result = await scn.scan(ScanType.UDP, top_ports_shuffled())
+    with Scanner("45.33.32.156", pool_size=256, rtt_timeout=3, time_between_packets_ms=20) as scn:
+        result = await scn.scan(ScanType.TCP_SYN, top_ports_shuffled())
     result = [x for x in result.values() if x.status != PortStatus.CLOSED]
     for x in result:
             print(x.port, x.status, x.detail)
