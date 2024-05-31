@@ -130,7 +130,7 @@ def return_script_list():
         rprint(script)
 
 def get_filter_value(filter):
-    from lib.newest_scanner import PortStatus
+    from lib.scanner import PortStatus
     filters = {"open":PortStatus.OPEN,
                "closed":PortStatus.CLOSED,
                "filtered":PortStatus.FILTERED,
