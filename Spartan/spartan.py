@@ -6,14 +6,17 @@ import time
 import datetime
 from functools import wraps
 from lib.scanner import Scanner, ScanType, PortStatus
-from lib.helpers.helpers import (MessageType, print_banner, print_scanner_options, port_mode_parser, return_table_result,
-                                 return_result_to_file, return_script_result, return_script_list, get_filter_value, HelpMsg)
+from lib.helpers.helpers import (MessageType, print_banner, print_scanner_options, port_mode_parser,
+                                 return_table_result,
+                                 return_result_to_file, return_script_result, return_script_list, get_filter_value,
+                                 HelpMsg)
 
 app = typer.Typer()
 msg = MessageType()
 state = {"basic": False}
 
-async def execute_scan(type,host,port,retry_timeout,output,script,filter):
+
+async def execute_scan(type, host, port, retry_timeout, output, script, filter, flag=None):
     scan_type = {
         "TCP SYN": ScanType.TCP_SYN,
         "UDP": ScanType.UDP,
@@ -27,15 +30,18 @@ async def execute_scan(type,host,port,retry_timeout,output,script,filter):
         filter = get_filter_value(filter)
         if filter is False:
             msg.error("Wrong filter! Return to default")
-            filter = PortStatus.OPEN
+            if type == "UDP":
+                filter = PortStatus.OPEN_OR_FILTERED
+            else:
+                filter = PortStatus.OPEN
     start = time.perf_counter()
     with Scanner(host=host, pool_size=256, rtt_timeout=retry_timeout) as scn:
         msg.info(f"{type} scan stared!")
         result = await scn.scan(method=scan_type[type], ports=port_mode_parser(port))
-    result = [x for x in result.values() if x.status == filter]
+    result = [x for x in result.values()]
     stop = time.perf_counter()
     msg.success("Done!")
-    msg.info(f"Time: {stop-start}")
+    msg.info(f"Time: {stop - start}")
     if len(result) != 0:
         msg.success(f"Results for {host}: \n")
         return_table_result(result)
@@ -45,74 +51,86 @@ async def execute_scan(type,host,port,retry_timeout,output,script,filter):
         return_result_to_file(host, result)
     if script:
         return_script_result(script, result, host)
+
+
 def coro(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         return asyncio.run(f(*args, **kwargs))
+
     return wrapper
-@app.command(name="scripts", help="List of avalible default scripts")
+
+
+@app.command(name="scripts", help="List of available default scripts")
 def script_lst():
     return_script_list()
+
 
 @app.command(name="udp", help="UDP Scan")
 @coro
 async def udp_scan(
-    host: str = typer.Option(default="", help=HelpMsg.host),
-    port: str = typer.Option(default="d", help=HelpMsg.port),
-    retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
-    output: bool = typer.Option(default=False, help=HelpMsg.output),
-    script: str = typer.Option(default=None, help=HelpMsg.script),
-    filter: str = typer.Option(default="open", help=HelpMsg.filter)
+        host: str = typer.Option(default="", help=HelpMsg.host),
+        port: str = typer.Option(default="d", help=HelpMsg.port),
+        retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
+        output: bool = typer.Option(default=False, help=HelpMsg.output),
+        script: str = typer.Option(default=None, help=HelpMsg.script),
+        filter: str = typer.Option(default="open_or_filtered", help=HelpMsg.filter)
 ):
     await execute_scan("UDP", host, port, retry_timeout, output, script, filter)
+
 
 @app.command(name="syn", help="TCP XMAS scan")
 @coro
 async def tcp_syn_scan(
-    host: str = typer.Option(default="", help=HelpMsg.host),
-    port: str = typer.Option(default="d", help=HelpMsg.port),
-    retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
-    output: bool = typer.Option(default=False, help=HelpMsg.output),
-    script: str = typer.Option(default=None, help=HelpMsg.script),
-    filter: str = typer.Option(default="open", help=HelpMsg.filter)
+        host: str = typer.Option(help=HelpMsg.host),
+        port: str = typer.Option(default="d", help=HelpMsg.port),
+        retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
+        output: bool = typer.Option(default=False, help=HelpMsg.output),
+        script: str = typer.Option(default=None, help=HelpMsg.script),
+        filter: str = typer.Option(default="open", help=HelpMsg.filter)
 ):
     await execute_scan("TCP SYN", host, port, retry_timeout, output, script, filter)
+
 
 @app.command(name="fin", help="TCP FIN scan")
 @coro
 async def tcp_fin_scan(
-    host: str = typer.Option(default="", help=HelpMsg.host),
-    port: str = typer.Option(default="d", help=HelpMsg.port),
-    retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
-    output: bool = typer.Option(default=False, help=HelpMsg.output),
-    script: str = typer.Option(default=None, help=HelpMsg.script),
-    filter: str = typer.Option(default="open", help=HelpMsg.filter)
+         host: str = typer.Option(help=HelpMsg.host),
+        port: str = typer.Option(default="d", help=HelpMsg.port),
+        retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
+        output: bool = typer.Option(default=False, help=HelpMsg.output),
+        script: str = typer.Option(default=None, help=HelpMsg.script),
+        filter: str = typer.Option(default="open", help=HelpMsg.filter),
+        flag: str = typer.Option(help=HelpMsg.flag)
 ):
-    await execute_scan("TCP FIN", host, port, retry_timeout, output, script, filter)
+    await execute_scan("TCP FIN", host, port, retry_timeout, output, script, filter, flag)
+
 
 @app.command(name="null", help="TCP NULL scan")
 @coro
 async def tcp_null_scan(
-    host: str = typer.Option(default="", help=HelpMsg.host),
-    port: str = typer.Option(default="d", help=HelpMsg.port),
-    retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
-    output: bool = typer.Option(default=False, help=HelpMsg.output),
-    script: str = typer.Option(default=None, help=HelpMsg.script),
-    filter: str = typer.Option(default="open", help=HelpMsg.filter)
+         host: str = typer.Option(help=HelpMsg.host),
+        port: str = typer.Option(default="d", help=HelpMsg.port),
+        retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
+        output: bool = typer.Option(default=False, help=HelpMsg.output),
+        script: str = typer.Option(default=None, help=HelpMsg.script),
+        filter: str = typer.Option(default="open", help=HelpMsg.filter)
 ):
     await execute_scan("TCP NULL", host, port, retry_timeout, output, script, filter)
+
 
 @app.command(name="xmas", help="TCP XMAS scan")
 @coro
 async def tcp_xmas_scan(
-    host: str = typer.Option(default="", help=HelpMsg.host),
-    port: str = typer.Option(default="d", help=HelpMsg.port),
-    retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
-    output: bool = typer.Option(default=False, help=HelpMsg.output),
-    script: str = typer.Option(default=None, help=HelpMsg.script),
-    filter: str = typer.Option(default="open", help=HelpMsg.filter)
+         host: str = typer.Option(help=HelpMsg.host),
+        port: str = typer.Option(default="d", help=HelpMsg.port),
+        retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
+        output: bool = typer.Option(default=False, help=HelpMsg.output),
+        script: str = typer.Option(default=None, help=HelpMsg.script),
+        filter: str = typer.Option(default="open", help=HelpMsg.filter)
 ):
     await execute_scan("TCP XMAS", host, port, retry_timeout, output, script, filter)
+
 
 @app.callback()
 def banner(basic: bool = False):
