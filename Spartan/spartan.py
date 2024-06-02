@@ -4,8 +4,9 @@ import sys
 import typer
 import time
 import datetime
-from functools import wraps
-from lib.scanner import Scanner, ScanType, PortStatus
+from rich.progress import Progress
+from functools import wraps, partial
+from lib.scanner import Scanner, ScanType, PortStatus, PortResult
 from lib.helpers.helpers import (MessageType, print_banner, print_scanner_options, port_mode_parser,
                                  return_table_result,
                                  return_result_to_file, return_script_result, return_script_list, get_filter_value,
@@ -15,8 +16,21 @@ app = typer.Typer()
 msg = MessageType()
 state = {"basic": False}
 
-
+def progress_cb(result: PortResult, progress, task, scanned: set):
+    if result.port not in scanned:
+        scanned.add(result.port)
+    perc = (len(scanned) / len(ports))
 async def execute_scan(type, host, port, retry_timeout, output, script, filter, flag=None):
+    scanned = set()
+    ports = port_mode_parser(port)
+    def progress_cb(result: PortResult, progress: Progress, task):
+        if result.port not in scanned:
+            scanned.add(result.port)
+        perc = (len(scanned) / len(ports))
+        if perc > 100:
+            return
+        if perc > ((len(scanned)-1)/len(ports)) * 100:
+            progress.update(task, completed=len(scanned))
     scan_type = {
         "TCP SYN": ScanType.TCP_SYN,
         "UDP": ScanType.UDP,
@@ -35,9 +49,13 @@ async def execute_scan(type, host, port, retry_timeout, output, script, filter, 
             else:
                 filter = PortStatus.OPEN
     start = time.perf_counter()
-    with Scanner(host=host, pool_size=256, rtt_timeout=retry_timeout) as scn:
-        msg.info(f"{type} scan stared!")
-        result = await scn.scan(method=scan_type[type], ports=port_mode_parser(port))
+    with Progress() as progress:
+        task = progress.add_task("Scanning ports.. ", total=len(ports))
+        callback = partial(progress_cb, progress=progress, task=task)
+        with Scanner(host=host, pool_size=256, rtt_timeout=retry_timeout,
+                     time_between_packets_ms=20, on_port_scanned=callback) as scn:
+            msg.info(f"{type} scan stared!")
+            result = await scn.scan(method=scan_type[type], ports=ports)
     result = [x for x in result.values()]
     stop = time.perf_counter()
     msg.success("Done!")
