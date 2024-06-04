@@ -16,17 +16,13 @@ app = typer.Typer()
 msg = MessageType()
 state = {"basic": False}
 
-def progress_cb(result: PortResult, progress, task, scanned: set):
-    if result.port not in scanned:
-        scanned.add(result.port)
-    perc = (len(scanned) / len(ports))
 async def execute_scan(type, host, port, retry_timeout, output, script, filter, flag=None):
     scanned = set()
     ports = port_mode_parser(port)
     def progress_cb(result: PortResult, progress: Progress, task):
         if result.port not in scanned:
             scanned.add(result.port)
-        perc = (len(scanned) / len(ports))
+        perc = (len(scanned) / len(ports)) * 100
         if perc > 100:
             return
         if perc > ((len(scanned)-1)/len(ports)) * 100:
