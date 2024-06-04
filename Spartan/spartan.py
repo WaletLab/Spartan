@@ -22,6 +22,8 @@ async def execute_scan(type, host, port, retry_timeout, output, script, filter, 
     def progress_cb(result: PortResult, progress: Progress, task):
         if result.port not in scanned:
             scanned.add(result.port)
+        else:
+            pass
         perc = (len(scanned) / len(ports)) * 100
         if perc > 100:
             return
