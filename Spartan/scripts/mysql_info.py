@@ -1,5 +1,4 @@
 import socket
-# todo to jest jakies zjabane
 
 def get_mysql_info(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,3 +19,6 @@ def get_mysql_info(host, port):
         return False, e
     finally:
         sock.close()
+for x in result:
+    if x.port == 3306:
+        get_mysql_info(host, x.port)
