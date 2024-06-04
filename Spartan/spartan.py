@@ -56,7 +56,7 @@ async def execute_scan(type, host, port, retry_timeout, output, script, filter, 
                      time_between_packets_ms=20, on_port_scanned=callback) as scn:
             msg.info(f"{type} scan stared!")
             result = await scn.scan(scan_type=scan_type[type], ports=ports)
-    result = [x for x in result.values()]
+    result = [x for x in result.values() if x.status == filter]
     stop = time.perf_counter()
     msg.success("Done!")
     msg.info(f"Time: {stop - start}")
