@@ -57,7 +57,7 @@ async def execute_scan(type, host, port, retry_timeout, output, script, filter, 
     result = [x for x in result.values() if x.status == filter]
     stop = time.perf_counter()
     msg.success("Done!")
-    msg.info(f"Time: {stop - start}")
+    msg.info(f"Time: {round(stop - start, 3)}s")
     if len(result) != 0:
         msg.success(f"Results for {host}: \n")
         return_table_result(result)
