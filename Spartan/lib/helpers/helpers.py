@@ -17,6 +17,7 @@ class HelpMsg:
     script = "script path, if you want use default scripts just type name.py"
     filter = " Filter to result. Filters avalible: open, closed, filtered, closed_or_open, awaiting"
     flag = "flag"
+    packet_timeout = "packet timeout in ms"
 class Port:
     top_ports = [1, 5, 9, 7, 11, 13, 17, 19, 20, 21, 22, 23, 25, 37, 42, 43, 49, 53, 70, 79, 80, 81, 88, 106, 110, 111,
                  113, 119, 135, 139, 143, 179, 199, 389, 427, 443, 444, 445, 465, 513, 514, 515, 543, 544, 548, 554,
@@ -55,14 +56,14 @@ def print_banner():
     rprint("[italic]created by WaletLab[/italic]\n")
 
 
-def print_scanner_options(date, mode, host, port, filter, retry_timeout):
+def print_scanner_options(date, mode, host, port, filter, retry_timeout, packet_timeout):
     if port == "d":
         port = "default"
     elif port == "a":
         port = "all ports"
     rprint("\n[bold blue]Scanner Options: [/bold blue]")
     print(
-        f"Date: {date}\nHost:  {host}\nMode:  {mode}\nPort:  {port}\nFilter:  {filter}\nRetry timeout:  {retry_timeout}\n")
+        f"Date: {date}\nHost:  {host}\nMode:  {mode}\nPort:  {port}\nFilter:  {filter}\nRetry timeout:  {retry_timeout}\nTimeout between packet:  {packet_timeout}\n")
 
 
 def port_mode_parser(port):
