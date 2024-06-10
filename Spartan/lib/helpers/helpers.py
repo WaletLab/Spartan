@@ -13,7 +13,7 @@ class HelpMsg:
     1:23 - range from 1 to 23,
     22 - just one single port"""
     retry_timeout = "retry timeout"
-    output = "basic output mode"
+    output = "save results to .csv file"
     script = "script path, if you want use default scripts just type name.py"
     filter = " Filter to result. Filters avalible: open, closed, filtered, closed_or_open, awaiting"
     flag = "flag"
@@ -112,7 +112,7 @@ def return_script_result(path, result, host):
     name = path.split("/")[-1]
     s = ScriptExec(name=name, host=host, result=result,
                    path=os.path.dirname(path))
-    rprint(f"[blue bold]\nScript {name} result:[/blue bold]")
+    rprint(f"[blue bold]\nScript {name} result:[/blue bold]\n")
     s.run_exec()
 
 
