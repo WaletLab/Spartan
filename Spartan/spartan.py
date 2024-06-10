@@ -17,7 +17,7 @@ app = typer.Typer()
 msg = MessageType()
 state = {"basic": False}
 
-async def execute_scan(type, host, port, retry_timeout, output, script, filter, flag=None):
+async def execute_scan(type, host, port, retry_timeout, output, script, filter, flag=None, packet_timeout=20):
     scanned = set()
     ports = port_mode_parser(port)
     def progress_cb(result: PortResult, progress: Progress, task):
@@ -39,7 +39,7 @@ async def execute_scan(type, host, port, retry_timeout, output, script, filter, 
     }
     if state['basic'] is False:
         print_scanner_options(datetime.datetime.today().strftime(
-            "%Y-%m-%d %H:%M"), type, host, port, filter, retry_timeout)
+            "%Y-%m-%d %H:%M"), type, host, port, filter, retry_timeout, packet_timeout)
         filter = get_filter_value(filter)
         if filter is False:
             msg.error("Wrong filter! Return to default")
@@ -104,9 +104,10 @@ async def tcp_syn_scan(
         retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
         output: bool = typer.Option(default=False, help=HelpMsg.output),
         script: str = typer.Option(default=None, help=HelpMsg.script),
-        filter: str = typer.Option(default="open", help=HelpMsg.filter)
+        filter: str = typer.Option(default="open", help=HelpMsg.filter),
+        packet_timeout: int = typer.Option(default=20, help=HelpMsg.packet_timeout)
 ):
-    await execute_scan("TCP SYN", host, port, retry_timeout, output, script, filter)
+    await execute_scan("TCP SYN", host, port, retry_timeout, output, script, filter,packet_timeout)
 
 
 @app.command(name="fin", help="TCP FIN scan")
@@ -118,9 +119,10 @@ async def tcp_fin_scan(
         output: bool = typer.Option(default=False, help=HelpMsg.output),
         script: str = typer.Option(default=None, help=HelpMsg.script),
         filter: str = typer.Option(default="open", help=HelpMsg.filter),
-        flag: str = typer.Option(help=HelpMsg.flag)
+        flag: str = typer.Option(help=HelpMsg.flag),
+        packet_timeout: int = typer.Option(default=20, help=HelpMsg.packet_timeout)
 ):
-    await execute_scan("TCP FIN", host, port, retry_timeout, output, script, filter, flag)
+    await execute_scan("TCP FIN", host, port, retry_timeout, output, script, filter, flag, packet_timeout)
 
 
 @app.command(name="null", help="TCP NULL scan")
@@ -131,9 +133,10 @@ async def tcp_null_scan(
         retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
         output: bool = typer.Option(default=False, help=HelpMsg.output),
         script: str = typer.Option(default=None, help=HelpMsg.script),
-        filter: str = typer.Option(default="open", help=HelpMsg.filter)
+        filter: str = typer.Option(default="open", help=HelpMsg.filter),
+        packet_timeout: int = typer.Option(default=20, help=HelpMsg.packet_timeout)
 ):
-    await execute_scan("TCP NULL", host, port, retry_timeout, output, script, filter)
+    await execute_scan("TCP NULL", host, port, retry_timeout, output, script, filter, packet_timeout)
 
 
 @app.command(name="xmas", help="TCP XMAS scan")
@@ -144,9 +147,10 @@ async def tcp_xmas_scan(
         retry_timeout: int = typer.Option(default=1, help=HelpMsg.retry_timeout),
         output: bool = typer.Option(default=False, help=HelpMsg.output),
         script: str = typer.Option(default=None, help=HelpMsg.script),
-        filter: str = typer.Option(default="open", help=HelpMsg.filter)
+        filter: str = typer.Option(default="open", help=HelpMsg.filter),
+        packet_timeout: int = typer.Option(default=20, help=HelpMsg.packet_timeout)
 ):
-    await execute_scan("TCP XMAS", host, port, retry_timeout, output, script, filter)
+    await execute_scan("TCP XMAS", host, port, retry_timeout, output, script, filter, packet_timeout)
 
 
 @app.callback()
