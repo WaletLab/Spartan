@@ -126,9 +126,9 @@ def list_script_from_default(path):
     return scripts
 def return_script_list():
     script_list = list_script_from_default("./scripts")
-    rprint("Default script list: ")
+    rprint(f"[blue bold]\nDefault script list:[/blue bold]")
     for script in script_list:
-        rprint(script)
+        rprint(f"- {script}")
 
 def get_filter_value(filter):
     from lib.scanner import PortStatus
