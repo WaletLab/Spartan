@@ -163,6 +163,7 @@ class Scanner:
                     await asyncio.sleep(self._time_between_retries_ms / 1000)
             await asyncio.sleep(0.5)
         self._pkt_handler_proper = None
+        self._sniffer.stop()
         return self._results
 
     def _run_async_midfast(self, fn, args_list: Iterable[Tuple | Any], flags: str | None):
