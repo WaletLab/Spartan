@@ -1,4 +1,5 @@
 import os
+import socket
 import asyncio
 import sys
 import typer
@@ -50,7 +51,7 @@ async def execute_scan(type, host, port, retry_timeout, output, script, filter, 
     with Progress() as progress:
         task = progress.add_task("Scanning ports.. ", total=len(ports))
         callback = partial(progress_cb, progress=progress, task=task)
-        with Scanner(host=host, pool_size=256, rtt_timeout=retry_timeout,
+        with Scanner(host=socket.gethostbyname(host), pool_size=256, rtt_timeout=retry_timeout,
                      time_between_packets_ms=20, on_port_scanned=callback) as scn:
             msg.info(f"{type} scan stared!")
             result = await scn.scan(scan_type=scan_type[type], ports=ports)
