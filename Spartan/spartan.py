@@ -95,7 +95,7 @@ async def udp_scan(
     await execute_scan("UDP", host, port, retry_timeout, output, script, filter)
 
 
-@app.command(name="syn", help="TCP XMAS scan")
+@app.command(name="syn", help="TCP SYN scan")
 @coro
 async def tcp_syn_scan(
         host: str = typer.Option(help=HelpMsg.host),
