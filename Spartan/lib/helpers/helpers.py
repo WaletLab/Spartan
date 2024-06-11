@@ -1,7 +1,23 @@
-from rich import print as rprint, table
+from rich import print as rprint
+from rich.table import Table
+from rich import box
 from art import tprint
+import datetime
+import csv
 
-
+class HelpMsg:
+    host = "your target IP"
+    port = """port mode
+    d - default ports,
+    a - all ports,
+    1:23 - range from 1 to 23,
+    22 - just one single port"""
+    retry_timeout = "retry timeout"
+    output = "save results to .csv file"
+    script = "script path, if you want use default scripts just type name.py"
+    filter = " Filter to result. Filters avalible: open, closed, filtered, closed_or_open, awaiting"
+    flag = "flag"
+    packet_timeout = "packet timeout in ms"
 class Port:
     top_ports = [1, 5, 9, 7, 11, 13, 17, 19, 20, 21, 22, 23, 25, 37, 42, 43, 49, 53, 70, 79, 80, 81, 88, 106, 110, 111,
                  113, 119, 135, 139, 143, 179, 199, 389, 427, 443, 444, 445, 465, 513, 514, 515, 543, 544, 548, 554,
@@ -40,15 +56,89 @@ def print_banner():
     rprint("[italic]created by WaletLab[/italic]\n")
 
 
-def print_scanner_options(date, mode, host, port, retry_timeout):
+def print_scanner_options(date, mode, host, port, filter, retry_timeout, packet_timeout):
+    if port == "d":
+        port = "default"
+    elif port == "a":
+        port = "all ports"
     rprint("\n[bold blue]Scanner Options: [/bold blue]")
     print(
-        f"Date: {date}\nHost:  {host}\nMode:  {mode}\nPort:  {port}\nRetry timeout:  {retry_timeout}\n")
+        f"Date: {date}\nHost:  {host}\nMode:  {mode}\nPort:  {port}\nFilter:  {filter}\nRetry timeout:  {retry_timeout}\nTimeout between packet:  {packet_timeout}\n")
 
 
 def port_mode_parser(port):
-    if port.find(":") != -1:
-        port_range = port.split(":")
-        return [x for x in range(int(port_range[0]), int(port_range[1])+1)]
+    from lib.scanner import all_ports
+    if port == "d":
+        return Port.top_ports
+    elif port == "a":
+        return all_ports()
     else:
-        return port
+        if port.find(":") != -1:
+            port_range = port.split(":")
+            return [x for x in range(int(port_range[0]), int(port_range[1])+1)]
+        else:
+            return [int(port)]
+
+
+def format_status(status):
+    if status == "OPEN":
+        return f"[green]{status}[/green]"
+    elif status == "FILTERED":
+        return f"[yellow]{status}[/yellow]"
+    else:
+        return status
+
+
+def return_table_result(result):
+    tb = Table(box=box.SIMPLE)
+    tb.add_column("PORT")
+    tb.add_column("STATUS")
+    tb.add_column("DETAILS")
+    for x in result:
+        tb.add_row(str(x.port), format_status(x.status), x.detail)
+    rprint(tb)
+
+
+def return_result_to_file(host, result):
+    outfile_name = f"{host}_output"
+    with open(f"{outfile_name}.csv", "w", newline="") as outfile:
+        writer = csv.writer(outfile, delimiter=';')
+        writer.writerow(["PORT", "STATUS", "DETAILS"])
+        writer.writerows([x.port, x.status, x.detail] for x in result)
+
+
+def return_script_result(path, result, host):
+    from lib.new_script import ScriptExec
+    import os
+    name = path.split("/")[-1]
+    s = ScriptExec(name=name, host=host, result=result,
+                   path=os.path.dirname(path))
+    rprint(f"[blue bold]\nScript {name} result:[/blue bold]\n")
+    s.run_exec()
+
+
+def list_script_from_default(path):
+    import os
+    scripts = []
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".py"):
+                scripts.append(file)
+    return scripts
+def return_script_list():
+    script_list = list_script_from_default("./scripts")
+    rprint(f"[blue bold]\nDefault script list:[/blue bold]")
+    for script in script_list:
+        rprint(f"- {script}")
+
+def get_filter_value(filter):
+    from lib.scanner import PortStatus
+    filters = {"open":PortStatus.OPEN,
+               "closed":PortStatus.CLOSED,
+               "filtered":PortStatus.FILTERED,
+               "open_or_filtered":PortStatus.OPEN_OR_FILTERED
+               }
+    try:
+        return filters[filter]
+    except KeyError:
+        return False

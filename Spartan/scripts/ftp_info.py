@@ -4,7 +4,7 @@ import ftplib
 import json
 from typing import Iterable
 
-from ..lib.helpers.bruteforce_async import check_all_entries
+from lib.helpers.bruteforce_async import check_all_entries
 
 
 class Result:
