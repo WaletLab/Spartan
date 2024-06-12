@@ -24,7 +24,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.x'
+        python-version: '3.10'
       
     - name: Install dependencies
       run: |
@@ -32,9 +32,7 @@ jobs:
         pip install setuptools wheel
         pip install build twine
     - name: Build package
-      run: python setup.py sdist
-    - name: Display contents of dist directory
-      run: ls -l dist
+      run: python -m pip wheel .
     - name: Publish package
       run: |
-        twine upload -u __token__ -p ${{ secrets.PYPI }} /dist/*
+        twine upload -u __token__ -p ${{ secrets.PYPI }} spartan_scan-2*
