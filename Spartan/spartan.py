@@ -159,9 +159,11 @@ def banner(basic: bool = False):
         print_banner()
     state["basic"] = basic
 
-
-if __name__ == "__main__":
+def main():
     if os.geteuid() != 0:
         msg.error("need sudo to run this masterpiece")
         sys.exit(0)
     app()
+
+if __name__ == "__main__":
+    main()

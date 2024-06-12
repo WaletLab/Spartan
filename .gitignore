@@ -3,4 +3,4 @@
 *.py[cod]
 *$py.class
 *.pyc
-venv_spartan
+.idea

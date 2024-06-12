@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools >= 64.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "spartan-scan"
+version = "2.0.0"
+description = "TCP/IP port scanner"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.10"
+
+authors = [
+    { name = "WaletLab", email = "kontakt@waletlab.com" }
+]
+
+maintainers = [
+    { name = "WaletLab", email = "kontakt@waletlab.com" }
+]
+
+dependencies = [
+    "rich>=13.7.1",
+    "art>=6.2",
+    "scapy>=2.5.0",
+    "requests>=2.32.2",
+    "typer>=0.12.3"
+]
+
+keywords = ["port scan", "port", "networking", "security"]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Topic :: Internet",
+    "Topic :: Security",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+
+[project.urls]
+Repository = "https://github.com/WaletLab/Spartan.git"
+Issues = "https://github.com/WaletLab/Spartan/issues"
+
+[project.scripts]
+spartan = "Spartan.spartan:main"
+
+[tool.setuptools.package-dir]
+Spartan = "Spartan"
+lib = "Spartan/lib"
+helpers = "Spartan/lib/helpers"
+
+[tool.setuptools.package-data]
+lib = ["nmap-services"]
