@@ -1,15 +1,15 @@
 import ssl
 import socket
-from lib.helpers.helpers import color 
+
 
 for x in result:
-    if x['port'] == 443:
+    if x.port == 443:
         with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
             try:
                 context = ssl.create_default_context()
                 context.check_hostname = False
                 with context.wrap_socket(sock,server_hostname = host) as ssl_sock:
-                    ssl_sock.connect((host,x['port']))
+                    ssl_sock.connect((host,x.port))
                     cert = ssl_sock.getpeercert()
                     if cert != {}:
                         cert_info = dict(
@@ -19,10 +19,10 @@ for x in result:
                             Valid_until = cert['notAfter'],
                             Serial_number = cert['serialNumber']
                         )
-                        print("\nSSL info for "+color.BOLD+f"{host}:\n"+color.END)
+                        print(f"\nSSL info for {host} ")
                         for k,v in enumerate(cert_info):
                             print(v+": "+str(cert_info[v]))
                     else:
-                        raise Exception("blad")
+                        raise Exception("No info found!")
             except Exception as e:
                 print(e)
