@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spartan-scan"
-version = "2.0.0"
+version = "2.0.1"
 description = "TCP/IP port scanner"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -52,6 +52,7 @@ spartan = "Spartan.spartan:main"
 Spartan = "Spartan"
 lib = "Spartan/lib"
 helpers = "Spartan/lib/helpers"
+scripts = "Spartan/scripts"
 
 [tool.setuptools.package-data]
 lib = ["nmap-services"]
