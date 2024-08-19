@@ -31,10 +31,3 @@ class ScriptExec:
                 setattr(module, var_name, var_value)
             spec.loader.exec_module(module)
 
-
-if __name__ == "__main__":
-    host = "45.33.32.156"
-    result = {}
-    s = ScriptExec( path="/Users/dannyx/PycharmProjects/Spartan/Spartan/scripts", name="test.py", host=host, result=result,
-                   )
-    s.run_exec()
