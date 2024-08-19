@@ -126,7 +126,8 @@ def list_script_from_default(path):
                 scripts.append(file)
     return scripts
 def return_script_list():
-    script_list = list_script_from_default("./scripts")
+    from Spartan import scripts
+    script_list = list_script_from_default(scripts.__path__[0])
     rprint(f"[blue bold]\nDefault script list:[/blue bold]")
     for script in script_list:
         rprint(f"- {script}")
