@@ -52,7 +52,7 @@ class MessageType:
 
 def print_banner():
     tprint("Spartan")
-    rprint("version: 2.0.1")
+    rprint("version: 2.0.2")
     rprint("[italic]created by WaletLab[/italic]\n")
 
 
