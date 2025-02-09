@@ -8,8 +8,9 @@ from copy import copy
 
 from scapy.layers.inet import IP, UDP, TCP, ICMP
 from scapy.all import Raw, RandShort, Packet, AsyncSniffer
-from scapy.sendrecv import sr, sr1, send
+from scapy.sendrecv import send
 from scapy.supersocket import L3RawSocket
+from scapy.interfaces import get_working_ifaces
 
 from .helpers.helpers import Port
 
@@ -116,7 +117,7 @@ class Scanner:
             self._pkt_handler_proper = handler
             # *should* drop packets like flies when they flow in at a fast rate
             # test whether that's the case
-            self._sniffer = AsyncSniffer(prn=self._pkt_handler_dispatch, filter=filter)
+            self._sniffer = AsyncSniffer(prn=self._pkt_handler_dispatch, filter=filter, iface=get_working_ifaces())
             self._sniffer.start()
 
         match scan_type:
