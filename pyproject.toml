@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spartan-scan"
-version = "2.0.1"
+version = "2.0.2"
 description = "TCP/IP port scanner"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -19,11 +19,11 @@ maintainers = [
 ]
 
 dependencies = [
-    "rich>=13.7.1",
-    "art>=6.2",
-    "scapy>=2.5.0",
-    "requests>=2.32.2",
-    "typer>=0.12.3"
+    "rich>=13.9.4",
+    "art>=6.4",
+    "scapy>=2.6.1",
+    "requests>=2.32.3",
+    "typer>=0.15.1"
 ]
 
 keywords = ["port scan", "port", "networking", "security"]
