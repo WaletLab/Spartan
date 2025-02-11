@@ -1,3 +1,4 @@
+[![PyPI Downloads](https://static.pepy.tech/badge/spartan-scan)](https://pepy.tech/projects/spartan-scan)
 # Spartan
 
 ## What is this project?
